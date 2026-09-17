@@ -1,0 +1,896 @@
+<title>예준이 배움터</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+  :root{
+    --cream: oklch(0.96 0.03 85);
+    --paper: oklch(0.99 0.012 92);
+    --ink: oklch(0.31 0.017 66);
+    --clay: oklch(0.64 0.152 40);
+    --claysoft: oklch(0.89 0.05 45);
+    --sage: oklch(0.68 0.05 155);
+    --sagesoft: oklch(0.91 0.025 150);
+    --sky: oklch(0.69 0.06 240);
+    --skysoft: oklch(0.91 0.028 240);
+    --sun: oklch(0.82 0.13 85);
+    --ink-08: oklch(0.31 0.017 66 / 0.08);
+    --ink-10: oklch(0.31 0.017 66 / 0.10);
+    --ink-15: oklch(0.31 0.017 66 / 0.15);
+    --ink-20: oklch(0.31 0.017 66 / 0.20);
+    --ink-25: oklch(0.31 0.017 66 / 0.25);
+    --ink-50: oklch(0.31 0.017 66 / 0.50);
+    --ink-55: oklch(0.31 0.017 66 / 0.55);
+    --ink-60: oklch(0.31 0.017 66 / 0.60);
+    --shadow-soft: 0 18px 40px -28px oklch(0.3 0.03 60 / 0.6);
+    --shadow-clay: 0 10px 20px -8px oklch(0.63 0.16 42 / 0.7);
+    --font-display: "Jua", "Noto Sans KR", sans-serif;
+    --font-sans: "Noto Sans KR", system-ui, sans-serif;
+  }
+
+  *{ box-sizing: border-box; }
+  html, body{ height: auto; }
+  body{
+    margin: 0;
+    background: var(--cream);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+  h1,h2,h3,p{ margin: 0; }
+  button{ font-family: inherit; border: none; background: none; cursor: pointer; color: inherit; }
+  a{ color: inherit; text-decoration: none; }
+  img,svg{ max-width: 100%; }
+  :focus-visible{ outline: 3px solid var(--clay); outline-offset: 2px; border-radius: 0.5rem; }
+
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{ animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  }
+
+  @keyframes stamp-in{
+    0%{ transform: translateY(-16px) scale(1.4) rotate(-8deg); opacity: 0; }
+    60%{ transform: translateY(2px) scale(0.92) rotate(2deg); opacity: 1; }
+    100%{ transform: translateY(0) scale(1) rotate(0deg); }
+  }
+  @keyframes pop-in{
+    from{ opacity: 0; transform: translateY(10px); }
+    to{ opacity: 1; transform: translateY(0); }
+  }
+  .anim-stamp{ animation: stamp-in 0.45s cubic-bezier(0.32, 0.72, 0, 1) both; }
+  .anim-pop{ animation: pop-in 0.4s cubic-bezier(0.32, 0.72, 0, 1) both; }
+
+  /* ---- preview notice ---- */
+  .preview-banner{
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    justify-content: center;
+    text-align: center;
+    padding: 0.55rem 1rem;
+    background: var(--paper);
+    border-bottom: 1px solid var(--ink-10);
+    font-size: 0.78rem;
+    color: var(--ink-60);
+  }
+  .preview-banner b{ color: var(--ink); font-weight: 600; }
+
+  /* ---- shell ---- */
+  .home-main, .learn-main{
+    padding: 0 1.5rem 3rem;
+    max-width: 56rem;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .learn-main.narrow{ max-width: 48rem; }
+
+  .home-header, .learn-header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    max-width: 56rem;
+    margin: 0 auto;
+  }
+  .learn-header{ justify-content: flex-start; }
+  .learn-header .header-title{ font-family: var(--font-display); font-size: 1.5rem; }
+  .learn-header .header-right{ margin-left: auto; display: flex; align-items: center; gap: 0.75rem; }
+
+  .brand{ display: flex; align-items: center; gap: 0.75rem; }
+  .brand-badge{
+    width: 2.75rem; height: 2.75rem; border-radius: 1rem;
+    background: var(--clay); color: var(--cream);
+    display: grid; place-items: center;
+    font-family: var(--font-display); font-size: 1.25rem;
+    flex-shrink: 0;
+  }
+  .brand-title{ font-family: var(--font-display); line-height: 1; }
+  .brand-sub{ font-size: 0.7rem; color: var(--ink-50); margin-top: 0.25rem; }
+
+  .chip{
+    display: flex; align-items: center; gap: 0.5rem;
+    border-radius: 999px; background: var(--paper);
+    border: 1px solid var(--ink-10);
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem; font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .chip .dot{ width: 0.6rem; height: 0.6rem; border-radius: 999px; background: var(--sun); flex-shrink: 0; }
+
+  .card{
+    background: var(--paper);
+    border: 1px solid var(--ink-10);
+    border-radius: 1.5rem;
+    box-shadow: var(--shadow-soft);
+  }
+
+  /* ---- hero ---- */
+  .hero{
+    padding: 2rem;
+    border-radius: 2rem;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    gap: 2rem;
+  }
+  .hero-text{ flex: 1; min-width: 0; }
+  .hero-eyebrow{ font-family: var(--font-display); color: var(--clay); margin-bottom: 0.5rem; }
+  .hero-title{ font-family: var(--font-display); font-size: 2.2rem; line-height: 1.25; margin-bottom: 1rem; text-wrap: balance; }
+  .hero-title .accent{ color: var(--clay); }
+  .hero-desc{ color: var(--ink-60); font-size: 0.9rem; line-height: 1.6; max-width: 30rem; }
+  .hero-figure{ width: 13rem; flex-shrink: 0; }
+
+  /* ---- buttons ---- */
+  .btn-tap{
+    min-height: 3.25rem;
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 0 1.5rem;
+    border-radius: 1rem;
+    touch-action: manipulation;
+    user-select: none;
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    transition: transform 0.15s ease;
+  }
+  .btn-tap:active{ transform: scale(0.97); }
+  .btn-primary{ background: var(--clay); color: var(--cream); box-shadow: var(--shadow-clay); margin-top: 1.5rem; }
+  .btn-sky{ background: var(--sky); color: var(--cream); }
+  .btn-sage{ background: var(--sage); color: var(--cream); }
+  .btn-outline-clay{ background: var(--claysoft); color: var(--clay); font-size: 1rem; padding: 0 1.25rem; }
+
+  /* ---- big cards (home) ---- */
+  .big-cards{ display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
+  .big-card{
+    border-radius: 1.5rem;
+    border: 1px solid;
+    padding: 1.5rem;
+    display: flex; align-items: center; gap: 1rem;
+    min-height: 5.5rem;
+    touch-action: manipulation;
+  }
+  .big-card.tone-clay{ background: var(--claysoft); border-color: oklch(0.64 0.152 40 / 0.3); }
+  .big-card.tone-sky{ background: var(--skysoft); border-color: oklch(0.69 0.06 240 / 0.3); }
+  .big-card.tone-sage{ background: var(--sagesoft); border-color: oklch(0.68 0.05 155 / 0.3); }
+  .big-card-face{
+    width: 4rem; height: 4rem; flex-shrink: 0;
+    border-radius: 1rem; background: var(--paper);
+    display: grid; place-items: center;
+    font-family: var(--font-display); font-size: 1.7rem;
+    color: var(--ink);
+  }
+  .big-card-copy{ display: flex; flex-direction: column; }
+  .big-card-title{ font-family: var(--font-display); font-size: 1.35rem; color: var(--ink); }
+  .big-card-sub{ font-size: 0.85rem; color: var(--ink-55); margin-top: 0.2rem; }
+
+  /* ---- two column ---- */
+  .two-col{ display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
+
+  .stamp-board{ padding: 1.5rem; }
+  .stamp-board-head{ display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .section-title{ font-family: var(--font-display); font-size: 1.25rem; }
+  .section-title.clay{ color: var(--clay); }
+  .section-title.sage{ color: var(--sage); }
+  .muted{ font-size: 0.85rem; color: var(--ink-50); font-variant-numeric: tabular-nums; }
+
+  .stamp-grid{ display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.75rem; }
+  .stamp{ aspect-ratio: 1; border-radius: 999px; display: grid; place-items: center; font-family: var(--font-display); font-size: 0.85rem; }
+  .stamp.filled{ background: var(--clay); color: var(--cream); }
+  .stamp.empty{ border: 2px dashed var(--ink-20); color: var(--ink-25); font-size: 1.1rem; }
+
+  .mastery-card{ padding: 1.5rem; }
+  .mastery-list{ display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem; }
+  .mastery-row{ display: flex; align-items: center; gap: 0.75rem; }
+  .mastery-syllable{ font-family: var(--font-display); font-size: 1.4rem; width: 2.5rem; text-align: center; flex-shrink: 0; }
+  .mastery-track{ flex: 1; height: 0.75rem; border-radius: 999px; background: var(--cream); overflow: hidden; }
+  .mastery-fill{ height: 100%; border-radius: 999px; background: var(--sage); transition: width 0.3s ease; }
+  .mastery-pct{ font-size: 0.75rem; width: 4.5rem; text-align: right; color: var(--ink-50); flex-shrink: 0; font-variant-numeric: tabular-nums; }
+  .hint{ font-size: 0.75rem; color: var(--ink-50); margin-top: 1rem; line-height: 1.6; }
+
+  /* ---- learn header ---- */
+  .back-btn{ background: var(--paper); border: 1px solid var(--ink-10); padding: 0 1.25rem; font-size: 1rem; }
+
+  /* ---- lesson strip / target strip ---- */
+  .syllable-picker{ display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.5rem; }
+  .syllable-chip{
+    flex-shrink: 0;
+    min-height: 3.25rem;
+    padding: 0 1.1rem;
+    border-radius: 1rem;
+    border: 2px solid var(--ink-10);
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    touch-action: manipulation;
+  }
+  .chip-plain{ background: var(--paper); color: var(--ink); }
+  .chip-mastered{ background: var(--sagesoft); border-color: oklch(0.68 0.05 155 / 0.4); color: var(--sage); }
+  .chip-active{ background: var(--clay); border-color: var(--clay); color: var(--cream); }
+
+  .lesson-strip, .target-strip{
+    padding: 1.25rem;
+    display: flex; align-items: center; gap: 1rem;
+  }
+  .lesson-syllable{ font-family: var(--font-display); font-size: 3rem; color: var(--clay); flex-shrink: 0; }
+  .lesson-syllable.sage{ color: var(--sage); }
+  .lesson-info{ flex: 1; min-width: 0; }
+  .lesson-words{ font-size: 0.85rem; color: var(--ink-60); margin-bottom: 0.5rem; }
+  .target-strip{ background: var(--sagesoft); border-color: oklch(0.68 0.05 155 / 0.3); }
+  .target-strip.sky{ background: var(--skysoft); border-color: oklch(0.69 0.06 240 / 0.3); }
+
+  /* ---- quiz card ---- */
+  .quiz-card{ padding: 1.75rem; }
+  .quiz-prompt{ font-family: var(--font-display); font-size: 1.4rem; margin-bottom: 1.5rem; text-wrap: balance; }
+  .quiz-sub{ font-size: 0.85rem; color: var(--ink-55); margin-top: -1rem; margin-bottom: 1.5rem; }
+  .accent-num{ font-family: var(--font-display); font-size: 1.4rem; color: var(--sky); font-variant-numeric: tabular-nums; }
+  .big-number{ font-family: var(--font-display); font-size: 2.75rem; color: var(--sky); font-variant-numeric: tabular-nums; }
+
+  .option-grid, .option-row{ display: grid; gap: 1rem; }
+  .option-row{ grid-auto-flow: column; grid-auto-columns: minmax(4.5rem, 1fr); justify-content: center; flex-wrap: wrap; }
+  .grid-3{ grid-template-columns: repeat(3, 1fr); }
+  .grid-4{ grid-template-columns: repeat(2, 1fr); }
+  .grid-5{ grid-template-columns: repeat(5, 1fr); }
+  .grid-tiles{ grid-template-columns: repeat(3, 1fr); }
+  @media (min-width: 640px){
+    .grid-4{ grid-template-columns: repeat(4, 1fr); }
+    .grid-tiles{ grid-template-columns: repeat(4, 1fr); }
+  }
+
+  .option-btn{
+    min-height: 5.5rem;
+    border-radius: 1.5rem;
+    border: 2px solid var(--ink-10);
+    background: var(--cream);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 0.4rem;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    touch-action: manipulation;
+    transition: transform 0.15s ease;
+  }
+  .option-btn:active:not(:disabled){ transform: scale(0.96); }
+  .option-btn:disabled{ cursor: default; }
+  .opt-syllable, .opt-part, .opt-tile{ font-size: 2.5rem; }
+  .opt-number{ font-size: 2rem; width: 5.5rem; margin: 0 auto; }
+  .opt-native{ font-size: 1.5rem; }
+  .opt-order{ font-size: 1.75rem; }
+  .opt-emoji{ font-size: 2rem; }
+  .opt-text{ font-size: 1.35rem; }
+
+  .opt-neutral{ background: var(--cream); border-color: var(--ink-10); }
+  .opt-correct{ background: var(--sagesoft); border-color: var(--sage); color: var(--sage); }
+  .opt-wrong{ background: var(--claysoft); border-color: var(--clay); color: var(--clay); }
+  .opt-dim{ background: var(--cream); border-color: var(--ink-10); opacity: 0.55; }
+  .opt-hit{ background: var(--sage); color: var(--cream); border-color: var(--sage); }
+  .opt-hit-sky{ background: var(--sky); color: var(--cream); border-color: var(--sky); }
+
+  .dot-field{ border-radius: 1.5rem; background: var(--cream); padding: 1.75rem; display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.1rem; place-items: center; }
+  .dot-field.small{ grid-template-columns: repeat(5, auto); padding: 1.25rem; gap: 0.9rem; }
+  .dot-big{ width: 2.75rem; height: 2.75rem; border-radius: 999px; background: var(--sky); }
+  .dot-big.small{ width: 2.25rem; height: 2.25rem; }
+
+  .mode-row{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+  .mode-row.two{ grid-template-columns: repeat(2, 1fr); margin-bottom: 1.5rem; }
+  .mode-btn{
+    min-height: 3.5rem;
+    border-radius: 1rem;
+    border: 2px solid var(--ink-10);
+    background: var(--paper);
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    touch-action: manipulation;
+  }
+  .mode-btn.active{ background: var(--sky); color: var(--cream); border-color: var(--sky); }
+
+  .quiz-footer{ margin-top: 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+
+  .locked-card{ padding: 2.5rem 2rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+  .locked-card .yejun-wrap{ margin-bottom: 0.5rem; }
+
+  /* ---- yejun character ---- */
+  .yejun-wrap{ display: flex; align-items: flex-end; gap: 0.75rem; }
+  .speech-bubble{
+    border-radius: 1.5rem; background: var(--paper); border: 1px solid var(--ink-10);
+    padding: 0.75rem 1.25rem; font-size: 1rem; font-family: var(--font-display); color: var(--ink);
+    box-shadow: var(--shadow-soft);
+  }
+  .yejun-img{ display: block; width: 100%; height: auto; filter: drop-shadow(0 10px 18px oklch(0.3 0.03 60 / 0.25)); user-select: none; }
+  .yejun-sm{ width: 3.25rem; }
+  .yejun-md{ width: 5.5rem; }
+  .yejun-lg{ width: 8rem; }
+  .yejun-xl{ width: 100%; }
+
+  @media (min-width: 640px){
+    .hero{ flex-direction: row; padding: 2.5rem; }
+    .hero-figure{ width: 15rem; }
+    .big-cards{ grid-template-columns: repeat(3, 1fr); }
+    .home-header, .learn-header, .home-main, .learn-main{ padding-left: 2rem; padding-right: 2rem; }
+  }
+  @media (min-width: 1024px){
+    .two-col{ grid-template-columns: 1fr 1fr; }
+  }
+</style>
+
+<div class="preview-banner">🔧 <b>정적 미리보기</b> — 이 기기에 Node.js/Bun이 없어 실제 서버 없이 화면과 동작만 재현했어요. 실제 코드와 100% 같지 않을 수 있어요.</div>
+<div id="app"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var app = document.getElementById("app");
+
+  // ---------- data (mirrors src/lib/learn-data.ts, built from 예준이 단어 창고) ----------
+  var syllableLessons = [
+    { syllable: "가", confusers: ["고", "기", "나"],
+      words: [{text:"가자",emoji:"🚶"},{text:"가방",emoji:"🎒"},{text:"가지",emoji:"🍆"},{text:"가위",emoji:"✂️"},{text:"숟가락",emoji:"🥄"}],
+      others: [{text:"나무",emoji:"🌳"},{text:"딸기",emoji:"🍓"},{text:"소파",emoji:"🛋️"},{text:"컵",emoji:"🥤"}] },
+    { syllable: "나", confusers: ["너", "다", "마"],
+      words: [{text:"나무",emoji:"🌳"},{text:"나비",emoji:"🦋"},{text:"바나나",emoji:"🍌"},{text:"나오다",emoji:"🚶"}],
+      others: [{text:"가방",emoji:"🎒"},{text:"딸기",emoji:"🍓"},{text:"소파",emoji:"🛋️"},{text:"컵",emoji:"🥤"}] },
+    { syllable: "다", confusers: ["더", "타", "나"],
+      words: [{text:"먹다",emoji:"🍽️"},{text:"앉다",emoji:"🪑"},{text:"열다",emoji:"🔓"},{text:"닫다",emoji:"🔒"},{text:"아프다",emoji:"🤕"},{text:"덥다",emoji:"🥵"}],
+      others: [{text:"나무",emoji:"🌳"},{text:"가방",emoji:"🎒"},{text:"딸기",emoji:"🍓"},{text:"컵",emoji:"🥤"}] },
+    { syllable: "아", confusers: ["어", "오", "야"],
+      words: [{text:"아빠",emoji:"👨"},{text:"아니",emoji:"🙅"},{text:"아이스크림",emoji:"🍦"},{text:"아파트",emoji:"🏢"},{text:"아프다",emoji:"🤕"}],
+      others: [{text:"나무",emoji:"🌳"},{text:"가방",emoji:"🎒"},{text:"딸기",emoji:"🍓"},{text:"컵",emoji:"🥤"}] },
+    { syllable: "소", confusers: ["서", "수", "조"],
+      words: [{text:"소파",emoji:"🛋️"},{text:"소리",emoji:"🔊"},{text:"소시지",emoji:"🌭"}],
+      others: [{text:"나무",emoji:"🌳"},{text:"가방",emoji:"🎒"},{text:"딸기",emoji:"🍓"},{text:"컵",emoji:"🥤"}] },
+    { syllable: "지", confusers: ["치", "자", "조"],
+      words: [{text:"가지",emoji:"🍆"},{text:"강아지",emoji:"🐶"},{text:"돼지",emoji:"🐷"},{text:"지우개",emoji:"🧽"}],
+      others: [{text:"나무",emoji:"🌳"},{text:"가방",emoji:"🎒"},{text:"딸기",emoji:"🍓"},{text:"컵",emoji:"🥤"}] },
+    { syllable: "안", confusers: ["양", "언", "온"],
+      words: [{text:"안녕하세요",emoji:"🙋"},{text:"안녕히계세요",emoji:"👋"},{text:"안돼",emoji:"❌"},{text:"안경",emoji:"👓"}],
+      others: [{text:"나무",emoji:"🌳"},{text:"가방",emoji:"🎒"},{text:"딸기",emoji:"🍓"},{text:"컵",emoji:"🥤"}] },
+    { syllable: "사", confusers: ["자", "서", "싸"],
+      words: [{text:"사과",emoji:"🍎"},{text:"사진",emoji:"🖼️"},{text:"감사합니다",emoji:"🙏"},{text:"사랑해",emoji:"🥰"}],
+      others: [{text:"나무",emoji:"🌳"},{text:"가방",emoji:"🎒"},{text:"딸기",emoji:"🍓"},{text:"컵",emoji:"🥤"}] },
+    { syllable: "배", confusers: ["베", "대", "매"],
+      words: [{text:"배",emoji:"🍐"},{text:"배고프다",emoji:"🍽️"},{text:"배추",emoji:"🥬"},{text:"배드민턴",emoji:"🏸"}],
+      others: [{text:"우산",emoji:"☂️"},{text:"모자",emoji:"🧢"},{text:"소파",emoji:"🛋️"},{text:"책",emoji:"📖"}] },
+    { syllable: "이", confusers: ["아", "오", "의"],
+      words: [{text:"고양이",emoji:"🐱"},{text:"종이접기",emoji:"📄"},{text:"아이스크림",emoji:"🍦"},{text:"이불",emoji:"🛌"}],
+      others: [{text:"우산",emoji:"☂️"},{text:"모자",emoji:"🧢"},{text:"책",emoji:"📖"},{text:"버스",emoji:"🚌"}] },
+    { syllable: "발", confusers: ["벌", "팔", "불"],
+      words: [{text:"발",emoji:"🦶"},{text:"신발을 신다",emoji:"👟"},{text:"신발을 벗다",emoji:"👟"}],
+      others: [{text:"나무",emoji:"🌳"},{text:"가방",emoji:"🎒"},{text:"딸기",emoji:"🍓"},{text:"컵",emoji:"🥤"}] },
+    { syllable: "부", confusers: ["보", "푸", "두"],
+      words: [{text:"공부하다",emoji:"📚"},{text:"두부",emoji:"🍲"},{text:"부채",emoji:"🪭"}],
+      others: [{text:"우산",emoji:"☂️"},{text:"모자",emoji:"🧢"},{text:"소파",emoji:"🛋️"},{text:"책",emoji:"📖"}] },
+    { syllable: "수", confusers: ["소", "주", "두"],
+      words: [{text:"수건",emoji:"🧻"},{text:"수박",emoji:"🍉"},{text:"수영",emoji:"🏊"},{text:"세수",emoji:"🚿"}],
+      others: [{text:"나무",emoji:"🌳"},{text:"가방",emoji:"🎒"},{text:"딸기",emoji:"🍓"},{text:"컵",emoji:"🥤"}] },
+    { syllable: "리", confusers: ["니", "디", "기"],
+      words: [{text:"머리",emoji:"🧒"},{text:"머리카락",emoji:"💇"},{text:"달리기",emoji:"🏃"},{text:"소리",emoji:"🔊"}],
+      others: [{text:"우산",emoji:"☂️"},{text:"모자",emoji:"🧢"},{text:"소파",emoji:"🛋️"},{text:"책",emoji:"📖"}] },
+    { syllable: "기", confusers: ["고", "그", "키"],
+      words: [{text:"기차",emoji:"🚆"},{text:"딸기",emoji:"🍓"},{text:"종이접기",emoji:"📄"},{text:"줄넘기",emoji:"🪢"},{text:"달리기",emoji:"🏃"}],
+      others: [{text:"나무",emoji:"🌳"},{text:"가방",emoji:"🎒"},{text:"컵",emoji:"🥤"},{text:"소파",emoji:"🛋️"}] },
+    { syllable: "자", confusers: ["차", "저", "다"],
+      words: [{text:"가자",emoji:"🚶"},{text:"자전거",emoji:"🚲"},{text:"들어가자",emoji:"🚪"}],
+      others: [{text:"나무",emoji:"🌳"},{text:"가방",emoji:"🎒"},{text:"딸기",emoji:"🍓"},{text:"컵",emoji:"🥤"}] }
+  ];
+
+  var numberItems = [
+    {value:1,sino:"일",native:"하나"},{value:2,sino:"이",native:"둘"},{value:3,sino:"삼",native:"셋"},
+    {value:4,sino:"사",native:"넷"},{value:5,sino:"오",native:"다섯"},{value:6,sino:"육",native:"여섯"},
+    {value:7,sino:"칠",native:"일곱"},{value:8,sino:"팔",native:"여덟"},{value:9,sino:"구",native:"아홉"},
+    {value:10,sino:"십",native:"열"}
+  ];
+
+  function shuffle(arr){
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+  function pickRandom(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+
+  // ---------- progress (mirrors src/lib/progress.ts) ----------
+  var PROGRESS_KEY = "yejun-progress-v1";
+  function emptyProgress(){
+    return { stamps: 0, stampLog: [], syllables: {}, numbers: { countCorrect: 0, nativeCorrect: 0, orderCompleted: 0 } };
+  }
+  function getProgress(){
+    try {
+      var raw = localStorage.getItem(PROGRESS_KEY);
+      if (!raw) return emptyProgress();
+      var parsed = JSON.parse(raw);
+      var base = emptyProgress();
+      return Object.assign(base, parsed, { numbers: Object.assign(base.numbers, parsed.numbers || {}) });
+    } catch (e) { return emptyProgress(); }
+  }
+  function saveProgress(p){ try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(p)); } catch (e) {} }
+  function isMastered(stat){
+    if (!stat) return false;
+    var last3 = stat.recent.slice(-3);
+    return stat.correctWords.length >= 3 && last3.length === 3 && last3.every(Boolean);
+  }
+  function masteryPercent(stat){
+    if (!stat) return 0;
+    var words = Math.min(stat.correctWords.length, 3) / 3;
+    var last3 = stat.recent.slice(-3);
+    var streak = last3.filter(Boolean).length / 3;
+    return Math.round((words * 0.6 + streak * 0.4) * 100);
+  }
+  function addStamp(label){
+    var p = getProgress();
+    p.stamps += 1;
+    p.stampLog = p.stampLog.concat([label]).slice(-50);
+    saveProgress(p);
+  }
+  function recordSyllable(syllable, word, correct){
+    var p = getProgress();
+    var prev = p.syllables[syllable] || { correctWords: [], recent: [], attempts: 0 };
+    var correctWords = (correct && prev.correctWords.indexOf(word) === -1) ? prev.correctWords.concat([word]) : prev.correctWords;
+    p.syllables[syllable] = { correctWords: correctWords, recent: prev.recent.concat([correct]).slice(-5), attempts: prev.attempts + 1 };
+    saveProgress(p);
+  }
+  function recordNumber(kind){
+    var p = getProgress();
+    p.numbers[kind] += 1;
+    saveProgress(p);
+  }
+
+  // ---------- speech (mirrors src/lib/speak.ts) ----------
+  function speak(text, rate){
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = "ko-KR";
+      u.rate = rate || 0.8;
+      window.speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  // ---------- shared components ----------
+  function yejunHTML(opts){
+    opts = opts || {};
+    var size = opts.size || "md";
+    var says = opts.says || "";
+    return (
+      '<div class="yejun-wrap">' +
+      (says ? '<div class="speech-bubble">' + escapeHtml(says) + "</div>" : "") +
+      '<img src="yejun.webp" alt="예준이 캐릭터" draggable="false" class="yejun-img yejun-' + size + '" loading="lazy">' +
+      "</div>"
+    );
+  }
+
+  function learnHeaderHTML(title, stamps){
+    return (
+      '<header class="learn-header">' +
+      '<a href="#/" class="btn-tap back-btn">← 홈으로</a>' +
+      '<div class="header-title">' + escapeHtml(title) + "</div>" +
+      '<div class="header-right">' +
+      '<div class="chip"><span class="dot"></span><span>도장 ' + stamps + "</span></div>" +
+      yejunHTML({ size: "sm" }) +
+      "</div></header>"
+    );
+  }
+
+  var STAMP_FACES = ["잘해", "최고", "멋져", "천재", "굿"];
+  function stampBoardHTML(stamps){
+    var total = 10;
+    var filled = stamps % total === 0 && stamps > 0 ? total : stamps % total;
+    var cells = "";
+    for (var i = 0; i < total; i++) {
+      if (i < filled) cells += '<div class="stamp filled anim-stamp">' + STAMP_FACES[i % STAMP_FACES.length] + "</div>";
+      else cells += '<div class="stamp empty">?</div>';
+    }
+    return (
+      '<div class="card stamp-board">' +
+      '<div class="stamp-board-head"><span class="section-title clay">오늘의 도장판</span>' +
+      '<span class="muted">' + filled + " / " + total + "</span></div>" +
+      '<div class="stamp-grid">' + cells + "</div></div>"
+    );
+  }
+
+  function optStyle(value, picked, result, correctValue){
+    if (result === "none") return "opt-neutral";
+    if (value === correctValue) return "opt-correct";
+    if (value === picked) return "opt-wrong";
+    return "opt-dim";
+  }
+
+  // ---------- home ----------
+  function renderHome(){
+    var progress = getProgress();
+    var masteredCount = syllableLessons.filter(function (l) { return isMastered(progress.syllables[l.syllable]); }).length;
+    var gameUnlocked = progress.stamps >= 5;
+
+    var cards =
+      '<a class="big-card tone-clay" href="#/hangul"><span class="big-card-face">한</span>' +
+      '<span class="big-card-copy"><span class="big-card-title">한글 배우기</span>' +
+      '<span class="big-card-sub">글자 ' + masteredCount + " / " + syllableLessons.length + '개 완전히 알아요</span></span></a>' +
+      '<a class="big-card tone-sky" href="#/numbers"><span class="big-card-face">1</span>' +
+      '<span class="big-card-copy"><span class="big-card-title">숫자 배우기</span>' +
+      '<span class="big-card-sub">세기 · 하나둘셋 · 순서</span></span></a>' +
+      '<a class="big-card tone-sage" href="#/game"><span class="big-card-face">🎮</span>' +
+      '<span class="big-card-copy"><span class="big-card-title">' + (gameUnlocked ? "보너스 놀이" : "보너스 놀이 (도장 5개)") + "</span>" +
+      '<span class="big-card-sub">' + (gameUnlocked ? "글자·숫자 찾기 놀이" : "도장 " + Math.max(0, 5 - progress.stamps) + "개 더!") + "</span></span></a>";
+
+    var masteryRows = syllableLessons.map(function (l) {
+      var stat = progress.syllables[l.syllable];
+      var pct = masteryPercent(stat);
+      return (
+        '<div class="mastery-row"><span class="mastery-syllable">' + l.syllable + "</span>" +
+        '<div class="mastery-track"><div class="mastery-fill" style="width:' + pct + '%"></div></div>' +
+        '<span class="mastery-pct">' + (isMastered(stat) ? "완전히 알아요" : pct + "%") + "</span></div>"
+      );
+    }).join("");
+
+    app.innerHTML =
+      '<header class="home-header"><div class="brand"><div class="brand-badge">예</div>' +
+      '<div><div class="brand-title">예준이 배움터</div><div class="brand-sub">나만의 맞춤 한글·수학</div></div></div>' +
+      '<div class="chip"><span class="dot"></span><span>모은 도장 ' + progress.stamps + "</span></div></header>" +
+      '<main class="home-main">' +
+      '<section class="hero card"><div class="hero-text">' +
+      '<div class="hero-eyebrow">안녕 예준아!</div>' +
+      '<h1 class="hero-title">오늘도 <span class="accent">하나</span>씩<br/>재밌게 배워볼까?</h1>' +
+      '<p class="hero-desc">한 글자를 여러 단어에서 만나 보고,<br/>진짜로 알았을 때만 다음으로 넘어가요.</p>' +
+      '<button class="btn-tap btn-primary" data-action="speak" data-text="안녕 예준아, 같이 공부하자">🔊 인사 듣기</button>' +
+      '</div><div class="hero-figure">' + yejunHTML({ size: "xl" }) + "</div></section>" +
+      '<section class="big-cards">' + cards + "</section>" +
+      '<section class="two-col">' + stampBoardHTML(progress.stamps) +
+      '<div class="card mastery-card"><div class="section-title sage">글자별로 얼마나 알까?</div>' +
+      '<div class="mastery-list">' + masteryRows + "</div>" +
+      '<p class="hint">서로 다른 단어 3개에서 맞히고, 연속 3번 맞혀야 "안다"로 인정해요.</p></div>' +
+      "</section></main>";
+  }
+
+  // ---------- hangul ----------
+  var HANGUL_LAST_KEY = "yejun-hangul-last-syllable";
+  var hangulLesson = null, hangulQuestion = null, hangulResult = "none", hangulPicked = null;
+  var hangulManualSyllable = (function () { try { return localStorage.getItem(HANGUL_LAST_KEY); } catch (e) { return null; } })();
+
+  function questionPrompt(q){
+    if (q.kind === "sound") return q.syllable + ". 어떤 글자일까요?";
+    if (q.kind === "inWord") return q.word + ". " + q.syllable + " 는 어디 있을까요?";
+    return q.syllable + " 가 들어간 것은 무엇일까요?";
+  }
+  function makeHangulQuestion(lesson, avoidWord){
+    var kind = pickRandom(["sound", "inWord", "pickWord"]);
+    if (kind === "sound") {
+      return { kind: "sound", syllable: lesson.syllable, options: shuffle([lesson.syllable].concat(lesson.confusers.slice(0, 3))) };
+    }
+    var pool = lesson.words.filter(function (w) { return w.text !== avoidWord; });
+    var target = pickRandom(pool.length ? pool : lesson.words);
+    if (kind === "inWord") {
+      return { kind: "inWord", syllable: lesson.syllable, word: target.text, parts: target.text.split("").filter(function (c) { return c !== " "; }) };
+    }
+    var others = shuffle(lesson.others).slice(0, 2);
+    return { kind: "pickWord", syllable: lesson.syllable, word: target.text, options: shuffle([target].concat(others)) };
+  }
+  function pickHangulLesson(progress){
+    if (hangulManualSyllable) {
+      var manual = syllableLessons.filter(function (l) { return l.syllable === hangulManualSyllable; })[0];
+      if (manual) return manual;
+    }
+    var next = syllableLessons.filter(function (l) { return !isMastered(progress.syllables[l.syllable]); })[0];
+    return next || pickRandom(syllableLessons);
+  }
+  function enterHangul(){
+    var progress = getProgress();
+    hangulLesson = pickHangulLesson(progress);
+    hangulManualSyllable = hangulLesson.syllable;
+    try { localStorage.setItem(HANGUL_LAST_KEY, hangulLesson.syllable); } catch (e) {}
+    hangulQuestion = makeHangulQuestion(hangulLesson);
+    hangulResult = "none"; hangulPicked = null;
+    speak(questionPrompt(hangulQuestion));
+  }
+  function hangulSelectSyllable(syllable){
+    hangulManualSyllable = syllable;
+    enterHangul();
+    renderPage();
+  }
+  function hangulAnswer(value){
+    if (!hangulQuestion || hangulResult !== "none") return;
+    var q = hangulQuestion;
+    var correct = q.kind === "pickWord" ? value === q.word : value === q.syllable;
+    hangulPicked = value;
+    hangulResult = correct ? "right" : "wrong";
+    recordSyllable(q.syllable, q.kind === "sound" ? "소리" : q.word, correct);
+    if (correct) { addStamp("한글 " + q.syllable); speak("잘했어요!"); }
+    else { speak("다시 해볼까요. " + q.syllable); }
+    renderPage();
+  }
+  function hangulNext(){
+    var avoid = hangulQuestion && hangulQuestion.kind !== "sound" ? hangulQuestion.word : undefined;
+    hangulQuestion = makeHangulQuestion(hangulLesson, avoid);
+    hangulResult = "none"; hangulPicked = null;
+    speak(questionPrompt(hangulQuestion));
+    renderPage();
+  }
+  function renderHangul(){
+    var progress = getProgress();
+    if (hangulLesson === null) enterHangul();
+    var stat = progress.syllables[hangulLesson.syllable];
+    var q = hangulQuestion;
+    var quiz = "";
+    if (q.kind === "sound") {
+      quiz = '<p class="quiz-prompt">「' + q.syllable + '」 는 어느 것일까요?</p><div class="option-grid grid-4">' +
+        q.options.map(function (o) {
+          return '<button class="option-btn opt-syllable ' + optStyle(o, hangulPicked, hangulResult, q.syllable) + '" data-action="hangul-answer" data-value="' + escapeHtml(o) + '">' + escapeHtml(o) + "</button>";
+        }).join("") + "</div>";
+    } else if (q.kind === "inWord") {
+      quiz = '<p class="quiz-prompt">「' + escapeHtml(q.word) + '」 에서 「' + q.syllable + '」 를 눌러요</p><div class="option-row">' +
+        q.parts.map(function (p) {
+          return '<button class="option-btn opt-part ' + optStyle(p, hangulPicked, hangulResult, q.syllable) + '" data-action="hangul-answer" data-value="' + escapeHtml(p) + '">' + escapeHtml(p) + "</button>";
+        }).join("") + "</div>";
+    } else {
+      quiz = '<p class="quiz-prompt">「' + q.syllable + '」 가 들어간 것은?</p><div class="option-grid grid-3">' +
+        q.options.map(function (o) {
+          return '<button class="option-btn opt-word ' + optStyle(o.text, hangulPicked, hangulResult, q.word) + '" data-action="hangul-answer" data-value="' + escapeHtml(o.text) + '"><span class="opt-emoji">' + o.emoji + '</span><span class="opt-text">' + escapeHtml(o.text) + "</span></button>";
+        }).join("") + "</div>";
+    }
+    var pickerChips = syllableLessons.map(function (l) {
+      var active = l.syllable === hangulLesson.syllable;
+      var mastered = isMastered(progress.syllables[l.syllable]);
+      var cls = active ? "chip-active" : mastered ? "chip-mastered" : "chip-plain";
+      return '<button class="syllable-chip ' + cls + '" data-action="hangul-pick" data-syllable="' + escapeHtml(l.syllable) + '">' + escapeHtml(l.syllable) + "</button>";
+    }).join("");
+
+    app.innerHTML =
+      learnHeaderHTML("한글 배우기", progress.stamps) +
+      '<main class="learn-main"><p class="hint" style="margin-top:0">글자를 골라서 다시 연습할 수 있어요</p>' +
+      '<div class="syllable-picker">' + pickerChips + '</div>' +
+      '<div class="card lesson-strip"><span class="lesson-syllable">' + hangulLesson.syllable + "</span>" +
+      '<div class="lesson-info"><div class="lesson-words">' + hangulLesson.words.map(function (w) { return w.text; }).join(" · ") + ' 에서 계속 만나요</div>' +
+      '<div class="mastery-track"><div class="mastery-fill" style="width:' + masteryPercent(stat) + '%"></div></div></div>' +
+      '<button class="btn-tap btn-outline-clay" data-action="speak" data-text="' + escapeHtml(hangulLesson.syllable) + '">🔊 소리</button></div>' +
+      '<div class="card quiz-card anim-pop">' + quiz +
+      (hangulResult !== "none"
+        ? '<div class="quiz-footer">' + yejunHTML({ size: "md", says: hangulResult === "right" ? "잘했어요! 도장 찍기 🎉" : "괜찮아요, 같이 해봐요" }) +
+          '<button class="btn-tap btn-primary" data-action="hangul-next">다음</button></div>'
+        : "") +
+      "</div></main>";
+  }
+
+  // ---------- numbers ----------
+  var numbersMode = "count", numbersTask = null, numbersResult = "none", numbersPicked = null;
+  var numbersOrderNext = 1, numbersOrderTiles = [];
+
+  function makeNumberTask(mode){
+    var item = pickRandom(numberItems);
+    if (mode === "count") {
+      var wrongC = shuffle(numberItems.filter(function (n) { return n.value !== item.value; })).slice(0, 2).map(function (n) { return n.value; });
+      return { mode: "count", value: item.value, options: shuffle([item.value].concat(wrongC)) };
+    }
+    var wrongN = shuffle(numberItems.filter(function (n) { return n.value !== item.value; })).slice(0, 2).map(function (n) { return n.native; });
+    return { mode: "native", value: item.value, options: shuffle([item.native].concat(wrongN)) };
+  }
+  function newNumberTask(mode){
+    numbersResult = "none"; numbersPicked = null;
+    if (mode === "order") {
+      numbersOrderNext = 1;
+      numbersOrderTiles = shuffle(numberItems.map(function (n) { return n.value; }));
+      numbersTask = null;
+      speak("1부터 10까지 순서대로 눌러요");
+      return;
+    }
+    numbersTask = makeNumberTask(mode);
+    speak(mode === "count" ? "몇 개일까요?" : "이 숫자는 어떻게 세나요?");
+  }
+  function numbersSetMode(mode){ numbersMode = mode; newNumberTask(mode); renderPage(); }
+  function numbersAnswer(rawValue){
+    if (!numbersTask || numbersResult !== "none") return;
+    var item = numberItems.filter(function (n) { return n.value === numbersTask.value; })[0];
+    var isCount = numbersTask.mode === "count";
+    var value = isCount ? Number(rawValue) : rawValue;
+    var correct = isCount ? value === numbersTask.value : value === item.native;
+    numbersPicked = value;
+    numbersResult = correct ? "right" : "wrong";
+    if (correct) {
+      recordNumber(isCount ? "countCorrect" : "nativeCorrect");
+      addStamp("숫자 " + numbersTask.value);
+      speak("맞았어요. " + item.value + ", " + item.native);
+    } else { speak("다시 세어 볼까요"); }
+    renderPage();
+  }
+  function numbersNext(){ newNumberTask(numbersMode); renderPage(); }
+  function numbersTapOrder(n){
+    if (n !== numbersOrderNext) { speak("다음 숫자를 찾아요"); return; }
+    speak(String(n));
+    if (n === 10) {
+      recordNumber("orderCompleted");
+      addStamp("숫자 순서");
+      numbersResult = "right";
+      speak("1부터 10까지 다 했어요. 잘했어요!");
+    }
+    numbersOrderNext = n + 1;
+    renderPage();
+  }
+  function renderNumbers(){
+    var progress = getProgress();
+    if (numbersMode !== "order" && numbersTask === null) newNumberTask("count");
+    if (numbersMode === "order" && numbersOrderTiles.length === 0) newNumberTask("order");
+
+    var modeButtons = [["count", "몇 개?"], ["native", "하나 둘 셋"], ["order", "순서대로"]]
+      .map(function (pair) {
+        return '<button class="mode-btn ' + (numbersMode === pair[0] ? "active" : "") + '" data-action="numbers-mode" data-mode="' + pair[0] + '">' + pair[1] + "</button>";
+      }).join("");
+
+    var body = "";
+    if (numbersMode === "count" && numbersTask && numbersTask.mode === "count") {
+      var dots = "";
+      for (var i = 0; i < numbersTask.value; i++) dots += '<span class="dot-big"></span>';
+      body = '<p class="quiz-prompt">몇 개일까요?</p><div class="dot-field">' + dots + '</div><div class="option-row">' +
+        numbersTask.options.map(function (o) {
+          return '<button class="option-btn opt-number ' + optStyle(o, numbersPicked, numbersResult, numbersTask.value) + '" data-action="numbers-answer" data-value="' + o + '">' + o + "</button>";
+        }).join("") + "</div>";
+    } else if (numbersMode === "native" && numbersTask && numbersTask.mode === "native") {
+      var item = numberItems.filter(function (n) { return n.value === numbersTask.value; })[0];
+      var dots2 = "";
+      for (var j = 0; j < item.value; j++) dots2 += '<span class="dot-big small"></span>';
+      body = '<p class="quiz-prompt"><span class="big-number">' + item.value + '</span> 는 어떻게 세나요?</p><div class="dot-field small">' + dots2 + '</div><div class="option-grid grid-3">' +
+        numbersTask.options.map(function (o) {
+          return '<button class="option-btn opt-native ' + optStyle(o, numbersPicked, numbersResult, item.native) + '" data-action="numbers-answer" data-value="' + escapeHtml(o) + '">' + escapeHtml(o) + "</button>";
+        }).join("") + "</div>";
+    } else if (numbersMode === "order") {
+      body = '<p class="quiz-prompt">1부터 10까지 순서대로 눌러요</p><p class="quiz-sub">다음 숫자: <span class="accent-num">' + Math.min(numbersOrderNext, 10) + '</span></p><div class="option-grid grid-5">' +
+        numbersOrderTiles.map(function (n) {
+          return '<button class="option-btn opt-order ' + (n < numbersOrderNext ? "opt-correct" : "opt-neutral") + '" data-action="numbers-order" data-n="' + n + '">' + n + "</button>";
+        }).join("") + "</div>";
+    }
+
+    app.innerHTML =
+      learnHeaderHTML("숫자 배우기", progress.stamps) +
+      '<main class="learn-main"><div class="mode-row">' + modeButtons + '</div>' +
+      '<div class="card quiz-card anim-pop">' + body +
+      (numbersResult !== "none"
+        ? '<div class="quiz-footer">' + yejunHTML({ size: "md", says: numbersResult === "right" ? "잘했어요! 도장 찍기 🎉" : "괜찮아요, 다시 해봐요" }) +
+          '<button class="btn-tap btn-sky" data-action="numbers-next">다음</button></div>'
+        : "") +
+      '</div><p class="hint">수를 셀 때는 그림 없이 같은 색·같은 모양만 사용해요.</p></main>';
+  }
+
+  // ---------- game (보너스 놀이: 글자 잡기 + 숫자 잡기) ----------
+  var gameMode = "hangul", gameTarget = "고", gameTiles = [], gameDone = false, gameStarted = false;
+  function startGame(mode){
+    gameMode = mode;
+    var chars = [];
+    if (mode === "hangul") {
+      var lesson = pickRandom(syllableLessons);
+      var others = shuffle(syllableLessons.filter(function (l) { return l.syllable !== lesson.syllable; }).map(function (l) { return l.syllable; }));
+      for (var i = 0; i < 4; i++) chars.push(lesson.syllable);
+      var k = 0;
+      while (chars.length < 12) { chars.push(others[k % others.length]); k++; }
+      gameTarget = lesson.syllable;
+      speak(gameTarget + " 를 모두 찾아요");
+    } else {
+      var item = pickRandom(numberItems);
+      var wrongNums = shuffle(numberItems.filter(function (n) { return n.value !== item.value; }).map(function (n) { return String(n.value); }));
+      for (var j = 0; j < 4; j++) chars.push(String(item.value));
+      var m = 0;
+      while (chars.length < 12) { chars.push(wrongNums[m % wrongNums.length]); m++; }
+      gameTarget = String(item.value);
+      speak("숫자 " + item.value + " 를 모두 찾아요");
+    }
+    gameTiles = shuffle(chars).map(function (ch, id) { return { id: id, ch: ch, hit: false }; });
+    gameDone = false;
+    gameStarted = true;
+  }
+  function gameSwitchMode(mode){
+    startGame(mode);
+    renderPage();
+  }
+  function gameTap(id){
+    var tile = gameTiles.filter(function (t) { return t.id === id; })[0];
+    if (!tile || tile.hit) return;
+    if (tile.ch !== gameTarget) { speak("아니에요. 다시 찾아봐요"); return; }
+    tile.hit = true;
+    speak(gameMode === "hangul" ? gameTarget : "숫자 " + gameTarget);
+    if (gameTiles.filter(function (t) { return t.ch === gameTarget; }).every(function (t) { return t.hit; })) {
+      gameDone = true;
+      addStamp((gameMode === "hangul" ? "놀이 " : "숫자놀이 ") + gameTarget);
+      speak("다 찾았어요! 잘했어요!");
+    }
+    renderPage();
+  }
+  function renderGame(){
+    var progress = getProgress();
+    var unlocked = progress.stamps >= 5;
+    if (!unlocked) {
+      app.innerHTML =
+        learnHeaderHTML("보너스 놀이", progress.stamps) +
+        '<main class="learn-main narrow"><div class="card locked-card">' +
+        yejunHTML({ size: "lg", says: "도장 5개 모으면 놀자!" }) +
+        '<p class="quiz-prompt">도장이 조금 더 필요해요</p>' +
+        '<p class="muted">지금 ' + progress.stamps + "개 · " + Math.max(0, 5 - progress.stamps) + "개 더 모으면 열려요</p>" +
+        '<a class="btn-tap btn-primary" href="#/hangul">한글 배우러 가기</a></div></main>';
+      return;
+    }
+    if (!gameStarted) startGame(gameMode);
+    var tone = gameMode === "hangul" ? "sage" : "sky";
+    var modeButtons =
+      '<button class="mode-btn ' + (gameMode === "hangul" ? "active" : "") + '" data-action="game-mode" data-mode="hangul">글자 잡기</button>' +
+      '<button class="mode-btn ' + (gameMode === "numbers" ? "active" : "") + '" data-action="game-mode" data-mode="numbers">숫자 잡기</button>';
+    app.innerHTML =
+      learnHeaderHTML("보너스 놀이", progress.stamps) +
+      '<main class="learn-main narrow"><div class="mode-row two">' + modeButtons + '</div>' +
+      '<div class="card target-strip ' + (tone === "sky" ? "sky" : "") + '"><span class="lesson-syllable ' + tone + '">' + gameTarget + '</span>' +
+      '<p class="quiz-prompt">' + (gameMode === "hangul" ? "이 글자를 모두 찾아요" : "이 숫자를 모두 찾아요") + '</p></div>' +
+      '<div class="option-grid grid-tiles">' +
+      gameTiles.map(function (t) {
+        return '<button class="option-btn opt-tile ' + (t.hit ? (tone === "sky" ? "opt-hit-sky anim-stamp" : "opt-hit anim-stamp") : "") + '" data-action="game-tap" data-id="' + t.id + '"' + (t.hit ? " disabled" : "") + ">" + t.ch + "</button>";
+      }).join("") + "</div>" +
+      (gameDone
+        ? '<div class="quiz-footer">' + yejunHTML({ size: "md", says: "다 찾았어요! 도장 찍기 🎉" }) +
+          '<button class="btn-tap ' + (tone === "sky" ? "btn-sky" : "btn-sage") + '" data-action="game-restart">한 번 더</button></div>'
+        : "") +
+      "</main>";
+  }
+
+  // ---------- router ----------
+  var ROUTES = { "": "home", "#/": "home", "#/hangul": "hangul", "#/numbers": "numbers", "#/game": "game" };
+  function currentRouteName(){ return ROUTES[location.hash || "#/"] || "home"; }
+  var lastRoute = null;
+  function resetEphemeralFor(name){
+    if (name === "hangul") { hangulLesson = null; hangulQuestion = null; hangulResult = "none"; hangulPicked = null; }
+    if (name === "numbers") { numbersMode = "count"; numbersTask = null; numbersResult = "none"; numbersPicked = null; numbersOrderNext = 1; numbersOrderTiles = []; }
+    if (name === "game") { gameStarted = false; gameDone = false; gameTiles = []; }
+  }
+  function renderPage(){
+    var name = currentRouteName();
+    if (name !== lastRoute) { resetEphemeralFor(name); lastRoute = name; }
+    if (name === "hangul") renderHangul();
+    else if (name === "numbers") renderNumbers();
+    else if (name === "game") renderGame();
+    else renderHome();
+  }
+
+  window.addEventListener("hashchange", function () { renderPage(); window.scrollTo({ top: 0 }); });
+
+  app.addEventListener("click", function (e) {
+    var el = e.target.closest("[data-action]");
+    if (!el) return;
+    var action = el.dataset.action;
+    if (action === "speak") speak(el.dataset.text);
+    else if (action === "hangul-answer") hangulAnswer(el.dataset.value);
+    else if (action === "hangul-next") hangulNext();
+    else if (action === "hangul-pick") hangulSelectSyllable(el.dataset.syllable);
+    else if (action === "numbers-mode") numbersSetMode(el.dataset.mode);
+    else if (action === "numbers-answer") numbersAnswer(el.dataset.value);
+    else if (action === "numbers-next") numbersNext();
+    else if (action === "numbers-order") numbersTapOrder(Number(el.dataset.n));
+    else if (action === "game-tap") gameTap(Number(el.dataset.id));
+    else if (action === "game-mode") gameSwitchMode(el.dataset.mode);
+    else if (action === "game-restart") { startGame(gameMode); renderPage(); }
+  });
+
+  renderPage();
+})();
+</script>
