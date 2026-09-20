@@ -338,8 +338,8 @@
     backdrop-filter: blur(6px);
   }
   .quiz-footer .btn-primary{ margin-top: 0; }
-  .quiz-footer .yejun-md{ width: 4rem; }
-  @media (min-width: 640px){ .quiz-footer .yejun-md{ width: 5.5rem; } }
+  .quiz-footer .yejun-md{ width: 3.25rem; }
+  @media@media (min-width: 640px){ .quiz-footer .yejun-md{ width: 4rem; } }
 
   .locked-card{ padding: 2.5rem 2rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
   .locked-card .yejun-wrap{ margin-bottom: 0.5rem; }
@@ -351,8 +351,13 @@
     padding: 0.75rem 1.25rem; font-size: 1rem; font-family: var(--font-display); color: var(--ink);
     box-shadow: var(--shadow-soft);
   }
-  .yejun-img{ display: block; width: 100%; height: auto; filter: drop-shadow(0 10px 18px oklch(0.3 0.03 60 / 0.25)); user-select: none; }
-  .yejun-sm{ width: 3.25rem; }
+  .yejun-img{ display: block; width: 100%; height: auto; mix-blend-mode: multiply; user-select: none; }
+  .yejun-pose{ display: block; flex-shrink: 0; background-image: url(yejun-sheet.webp); background-repeat: no-repeat; mix-blend-mode: multiply; user-select: none; }
+  .yejun-pose.is-face{ mix-blend-mode: normal; border-radius: 1.25rem; border: 1px solid var(--ink-10); box-shadow: var(--shadow-soft); }
+  .peek-wrap{ position: relative; margin-top: 2rem; }
+  .peek{ position: absolute; right: 1.25rem; bottom: 100%; height: 4rem; overflow: hidden; pointer-events: none; }
+  .peek .peek-fig{ width: 5rem; }
+  .yejun-sm{ width: 3rem; }
   .yejun-md{ width: 5.5rem; }
   .yejun-lg{ width: 8rem; }
   .yejun-xl{ width: 100%; }
@@ -511,26 +516,43 @@
   }
 
   // ---------- shared components ----------
+  var SHEET_W = 1536, SHEET_H = 1024;
+  var CROPS = {
+    front: [25, 58, 170, 415], side: [215, 58, 155, 415], back: [395, 58, 170, 415], threeQuarter: [578, 58, 168, 415],
+    neutral: [770, 78, 148, 215], focus: [920, 78, 148, 215], warm: [1067, 78, 148, 215], serious: [1217, 78, 148, 215], calm: [1367, 78, 148, 215]
+  };
+  var FACES = ["neutral", "focus", "warm", "serious", "calm"];
+  var BODY_POSES = ["front", "threeQuarter", "side", "wave"];
+  function poseAt(list, n){ return list[((n % list.length) + list.length) % list.length]; }
+  function poseHTML(pose, cls){
+    if (!pose || pose === "wave") return "<img src=\"yejun.webp\" alt=\"예준이 캐릭터\" draggable=\"false\" class=\"yejun-img " + cls + "\" loading=\"lazy\">";
+    var c = CROPS[pose], x = c[0], y = c[1], w = c[2], h = c[3];
+    var style = "aspect-ratio:" + w + "/" + h + ";background-size:" + (SHEET_W / w * 100) + "% " + (SHEET_H / h * 100) + "%;background-position:" + (x / (SHEET_W - w) * 100) + "% " + (y / (SHEET_H - h) * 100) + "%";
+    return "<div role=\"img\" aria-label=\"예준이 캐릭터\" class=\"yejun-pose " + (FACES.indexOf(pose) !== -1 ? "is-face " : "") + cls + "\" style=\"" + style + "\"></div>";
+  }
   function yejunHTML(opts){
     opts = opts || {};
     var size = opts.size || "md";
     var says = opts.says || "";
     return (
-      '<div class="yejun-wrap">' +
-      (says ? '<div class="speech-bubble">' + escapeHtml(says) + "</div>" : "") +
-      '<img src="yejun.webp" alt="예준이 캐릭터" draggable="false" class="yejun-img yejun-' + size + '" loading="lazy">' +
+      "<div class=\"yejun-wrap\">" +
+      (says ? "<div class=\"speech-bubble\">" + escapeHtml(says) + "</div>" : "") +
+      poseHTML(opts.pose, "yejun-" + size) +
       "</div>"
     );
   }
+  function peekHTML(n){
+    return "<div class=\"peek\">" + poseHTML(poseAt(BODY_POSES, n), "peek-fig") + "</div>";
+  }
 
-  function learnHeaderHTML(title, stamps){
+  function learnHeaderHTML(title, stamps, pose){
     return (
       '<header class="learn-header">' +
       '<a href="#/" class="btn-tap back-btn">← 홈으로</a>' +
       '<div class="header-title">' + escapeHtml(title) + "</div>" +
       '<div class="header-right">' +
       '<div class="chip"><span class="dot"></span><span>도장 ' + stamps + "</span></div>" +
-      yejunHTML({ size: "sm" }) +
+      yejunHTML({ size: "sm", pose: pose || "neutral" }) +
       "</div></header>"
     );
   }
@@ -720,24 +742,25 @@
       '<a class="btn-tap back-btn" href="#/">홈으로</a></div></div>';
 
     app.innerHTML =
-      learnHeaderHTML("한글 배우기", progress.stamps) +
+      learnHeaderHTML("한글 배우기", progress.stamps, "focus") +
       '<main class="learn-main"><p class="hint" style="margin-top:0">글자를 골라서 다시 연습할 수 있어요</p>' +
       '<div class="syllable-picker">' + pickerChips + '</div>' +
       '<div class="card lesson-strip"><span class="lesson-syllable">' + hangulLesson.syllable + "</span>" +
       '<div class="lesson-info"><div class="lesson-words">' + hangulLesson.words.map(function (w) { return w.text; }).join(" · ") + ' 에서 계속 만나요</div>' +
       '<div class="mastery-track"><div class="mastery-fill" style="width:' + masteryPercent(stat) + '%"></div></div></div>' +
       '<button class="btn-tap btn-outline-clay" data-action="speak" data-text="' + escapeHtml(hangulLesson.syllable) + '">🔊 소리</button></div>' +
-      (hangulFinished ? finishedCard : '<div class="card quiz-card anim-pop">' + roundDots + quiz +
+      (hangulFinished ? finishedCard : '<div class="peek-wrap">' + peekHTML(hangulResult === "none" ? hangulAnswered : hangulAnswered - 1) + '<div class="card quiz-card">' + roundDots + quiz +
       (hangulResult !== "none"
-        ? '<div class="quiz-footer">' + yejunHTML({ size: "md", says: hangulResult === "right" ? "잘했어요! 도장 찍기 🎉" : "괜찮아요, 같이 해봐요" }) +
+        ? '<div class="quiz-footer">' + yejunHTML({ size: "md", pose: hangulResult === "right" ? "warm" : "calm", says: hangulResult === "right" ? "잘했어요! 도장 찍기 🎉" : "괜찮아요, 같이 해봐요" }) +
           '<button class="btn-tap btn-primary" data-action="' + (hangulAnswered >= HANGUL_ROUND ? "hangul-finish" : "hangul-next") + '">' + (hangulAnswered >= HANGUL_ROUND ? "결과 보기" : "다음") + '</button></div>'
         : "") +
-      "</div>") + "</main>";
+      "</div></div>") + "</main>";
   }
 
   // ---------- numbers ----------
   var numbersMode = "count", numbersTask = null, numbersResult = "none", numbersPicked = null;
   var numbersOrderNext = 1, numbersOrderTiles = [];
+  var numbersTurn = 0;
   var numbersBlank = null, numbersBlankFilled = 0, numbersBlankWrong = null;
   function makeBlank(){
     var start = 1 + Math.floor(Math.random() * 6);
@@ -774,6 +797,7 @@
     return { mode: "native", value: item.value, options: shuffle([item.native].concat(wrongN)) };
   }
   function newNumberTask(mode){
+    numbersTurn += 1;
     numbersResult = "none"; numbersPicked = null;
     numbersBlankFilled = 0; numbersBlankWrong = null;
     if (mode === "blank") {
@@ -869,14 +893,14 @@
     }
 
     app.innerHTML =
-      learnHeaderHTML("숫자 배우기", progress.stamps) +
+      learnHeaderHTML("숫자 배우기", progress.stamps, "focus") +
       '<main class="learn-main"><div class="mode-row">' + modeButtons + '</div>' +
-      '<div class="card quiz-card anim-pop">' + body +
+      '<div class="peek-wrap">' + peekHTML(numbersTurn) + '<div class="card quiz-card">' + body +
       (numbersResult !== "none"
-        ? '<div class="quiz-footer">' + yejunHTML({ size: "md", says: numbersResult === "right" ? "잘했어요! 도장 찍기 🎉" : "괜찮아요, 다시 해봐요" }) +
+        ? '<div class="quiz-footer">' + yejunHTML({ size: "md", pose: numbersResult === "right" ? "warm" : "calm", says: numbersResult === "right" ? "잘했어요! 도장 찍기 🎉" : "괜찮아요, 다시 해봐요" }) +
           '<button class="btn-tap btn-sky" data-action="numbers-next">다음</button></div>'
         : "") +
-      '</div><p class="hint">수를 셀 때는 그림 없이 같은 색·같은 모양만 사용해요.</p></main>';
+      '</div></div><p class="hint">수를 셀 때는 그림 없이 같은 색·같은 모양만 사용해요.</p></main>';
   }
 
   // ---------- game (보너스 놀이: 글자 잡기 + 숫자 잡기) ----------
@@ -927,9 +951,9 @@
     var unlocked = progress.stamps >= 5;
     if (!unlocked) {
       app.innerHTML =
-        learnHeaderHTML("보너스 놀이", progress.stamps) +
+        learnHeaderHTML("보너스 놀이", progress.stamps, "serious") +
         '<main class="learn-main narrow"><div class="card locked-card">' +
-        yejunHTML({ size: "lg", says: "도장 5개 모으면 놀자!" }) +
+        yejunHTML({ size: "lg", pose: "threeQuarter", says: "도장 5개 모으면 놀자!" }) +
         '<p class="quiz-prompt">도장이 조금 더 필요해요</p>' +
         '<p class="muted">지금 ' + progress.stamps + "개 · " + Math.max(0, 5 - progress.stamps) + "개 더 모으면 열려요</p>" +
         '<a class="btn-tap btn-primary" href="#/hangul">한글 배우러 가기</a></div></main>';
@@ -941,7 +965,7 @@
       '<button class="mode-btn ' + (gameMode === "hangul" ? "active" : "") + '" data-action="game-mode" data-mode="hangul">글자 잡기</button>' +
       '<button class="mode-btn ' + (gameMode === "numbers" ? "active" : "") + '" data-action="game-mode" data-mode="numbers">숫자 잡기</button>';
     app.innerHTML =
-      learnHeaderHTML("보너스 놀이", progress.stamps) +
+      learnHeaderHTML("보너스 놀이", progress.stamps, "warm") +
       '<main class="learn-main narrow"><div class="mode-row two">' + modeButtons + '</div>' +
       '<div class="card target-strip ' + (tone === "sky" ? "sky" : "") + '"><span class="lesson-syllable ' + tone + '">' + gameTarget + '</span>' +
       '<p class="quiz-prompt">' + (gameMode === "hangul" ? "이 글자를 모두 찾아요" : "이 숫자를 모두 찾아요") + '</p></div>' +
@@ -950,7 +974,7 @@
         return '<button class="option-btn opt-tile ' + (t.hit ? (tone === "sky" ? "opt-hit-sky anim-stamp" : "opt-hit anim-stamp") : "") + '" data-action="game-tap" data-id="' + t.id + '"' + (t.hit ? " disabled" : "") + ">" + t.ch + "</button>";
       }).join("") + "</div>" +
       (gameDone
-        ? '<div class="quiz-footer">' + yejunHTML({ size: "md", says: "다 찾았어요! 도장 찍기 🎉" }) +
+        ? '<div class="quiz-footer">' + yejunHTML({ size: "md", pose: "warm", says: "다 찾았어요! 도장 찍기 🎉" }) +
           '<button class="btn-tap ' + (tone === "sky" ? "btn-sky" : "btn-sage") + '" data-action="game-restart">한 번 더</button></div>'
         : "") +
       "</main>";
