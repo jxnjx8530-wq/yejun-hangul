@@ -749,12 +749,12 @@
       '<div class="lesson-info"><div class="lesson-words">' + hangulLesson.words.map(function (w) { return w.text; }).join(" · ") + ' 에서 계속 만나요</div>' +
       '<div class="mastery-track"><div class="mastery-fill" style="width:' + masteryPercent(stat) + '%"></div></div></div>' +
       '<button class="btn-tap btn-outline-clay" data-action="speak" data-text="' + escapeHtml(hangulLesson.syllable) + '">🔊 소리</button></div>' +
-      (hangulFinished ? finishedCard : '<div class="peek-wrap">' + peekHTML(hangulResult === "none" ? hangulAnswered : hangulAnswered - 1) + '<div class="card quiz-card">' + roundDots + quiz +
+      (hangulFinished ? finishedCard : '<div class="card quiz-card anim-pop">' + roundDots + quiz +
       (hangulResult !== "none"
         ? '<div class="quiz-footer">' + yejunHTML({ size: "md", pose: hangulResult === "right" ? "warm" : "calm", says: hangulResult === "right" ? "잘했어요! 도장 찍기 🎉" : "괜찮아요, 같이 해봐요" }) +
           '<button class="btn-tap btn-primary" data-action="' + (hangulAnswered >= HANGUL_ROUND ? "hangul-finish" : "hangul-next") + '">' + (hangulAnswered >= HANGUL_ROUND ? "결과 보기" : "다음") + '</button></div>'
         : "") +
-      "</div></div>") + "</main>";
+      "</div>") + "</main>";
   }
 
   // ---------- numbers ----------
@@ -895,12 +895,12 @@
     app.innerHTML =
       learnHeaderHTML("숫자 배우기", progress.stamps, "neutral") +
       '<main class="learn-main"><div class="mode-row">' + modeButtons + '</div>' +
-      '<div class="peek-wrap">' + peekHTML(numbersTurn) + '<div class="card quiz-card">' + body +
+      '<div class="card quiz-card anim-pop">' + body +
       (numbersResult !== "none"
         ? '<div class="quiz-footer">' + yejunHTML({ size: "md", pose: numbersResult === "right" ? "warm" : "calm", says: numbersResult === "right" ? "잘했어요! 도장 찍기 🎉" : "괜찮아요, 다시 해봐요" }) +
           '<button class="btn-tap btn-sky" data-action="numbers-next">다음</button></div>'
         : "") +
-      '</div></div><p class="hint">수를 셀 때는 그림 없이 같은 색·같은 모양만 사용해요.</p></main>';
+      '</div><p class="hint">수를 셀 때는 그림 없이 같은 색·같은 모양만 사용해요.</p></main>';
   }
 
   // ---------- game (보너스 놀이: 글자 잡기 + 숫자 잡기) ----------
