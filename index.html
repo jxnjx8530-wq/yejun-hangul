@@ -702,7 +702,7 @@
     var nextLessonObj = syllableLessons[lessonIdx + 1] || null;
     var finishedCard =
       '<div class="card finish-card anim-pop">' +
-      yejunHTML({ size: "lg", says: "「" + hangulLesson.syllable + "」 공부 끝! 🎉" }) +
+      yejunHTML({ size: "lg", says: "「" + hangulLesson.syllable + "」 잘 익혔어요! 🎉" }) +
       '<p class="quiz-prompt" style="margin:1rem 0 0.25rem">' + HANGUL_ROUND + "문제 중 " + hangulCorrect + "개 맞혔어요</p>" +
       '<p class="muted" style="margin-bottom:1.25rem">정말 잘했어요! 이제 뭐 할까요?</p>' +
       '<div class="finish-actions">' +
@@ -721,7 +721,7 @@
       (hangulFinished ? finishedCard : '<div class="card quiz-card anim-pop">' + roundDots + quiz +
       (hangulResult !== "none"
         ? '<div class="quiz-footer">' + yejunHTML({ size: "md", says: hangulResult === "right" ? "잘했어요! 도장 찍기 🎉" : "괜찮아요, 같이 해봐요" }) +
-          '<button class="btn-tap btn-primary" data-action="' + (hangulAnswered >= HANGUL_ROUND ? "hangul-finish" : "hangul-next") + '">' + (hangulAnswered >= HANGUL_ROUND ? "끝!" : "다음") + '</button></div>'
+          '<button class="btn-tap btn-primary" data-action="' + (hangulAnswered >= HANGUL_ROUND ? "hangul-finish" : "hangul-next") + '">' + (hangulAnswered >= HANGUL_ROUND ? "결과 보기" : "다음") + '</button></div>'
         : "") +
       "</div>") + "</main>";
   }
@@ -929,7 +929,7 @@
     else if (action === "hangul-answer") hangulAnswer(el.dataset.value);
     else if (action === "hangul-next") hangulNext();
     else if (action === "hangul-pick") hangulSelectSyllable(el.dataset.syllable);
-    else if (action === "hangul-finish") { hangulFinished = true; speak("공부 끝! 잘했어요!"); renderPage(); }
+    else if (action === "hangul-finish") { hangulFinished = true; speak("잘 익혔어요! 잘했어요!"); renderPage(); }
     else if (action === "hangul-restart") { enterHangul(); renderPage(); }
     else if (action === "numbers-mode") numbersSetMode(el.dataset.mode);
     else if (action === "numbers-answer") numbersAnswer(el.dataset.value);
