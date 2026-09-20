@@ -305,7 +305,22 @@
   }
   .mode-btn.active{ background: var(--sky); color: var(--cream); border-color: var(--sky); }
 
-  .quiz-footer{ margin-top: 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+  .quiz-footer{
+    position: sticky;
+    bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    z-index: 10;
+    margin-top: 2rem;
+    display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 1.5rem;
+    border: 1px solid var(--ink-10);
+    background: color-mix(in oklab, var(--paper) 94%, transparent);
+    box-shadow: var(--shadow-soft);
+    backdrop-filter: blur(6px);
+  }
+  .quiz-footer .btn-primary{ margin-top: 0; }
+  .quiz-footer .yejun-md{ width: 4rem; }
+  @media (min-width: 640px){ .quiz-footer .yejun-md{ width: 5.5rem; } }
 
   .locked-card{ padding: 2.5rem 2rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
   .locked-card .yejun-wrap{ margin-bottom: 0.5rem; }
