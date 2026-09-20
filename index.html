@@ -653,7 +653,7 @@
   // ---------- hangul ----------
   var HANGUL_LAST_KEY = "yejun-hangul-last-syllable";
   var HANGUL_ROUND = 5;
-  var hangulLesson = null, hangulQuestion = null, hangulResult = "none", hangulPicked = null;
+  var hangulLesson = null, hangulQuestion = null, hangulResult = "none", hangulWrong = [];
   var hangulAnswered = 0, hangulCorrect = 0, hangulFinished = false;
   var hangulManualSyllable = (function () { try { return localStorage.getItem(HANGUL_LAST_KEY); } catch (e) { return null; } })();
 
@@ -689,7 +689,7 @@
     hangulManualSyllable = hangulLesson.syllable;
     try { localStorage.setItem(HANGUL_LAST_KEY, hangulLesson.syllable); } catch (e) {}
     hangulQuestion = makeHangulQuestion(hangulLesson);
-    hangulResult = "none"; hangulPicked = null;
+    hangulResult = "none"; hangulWrong = [];
     hangulAnswered = 0; hangulCorrect = 0; hangulFinished = false;
     speak(questionPrompt(hangulQuestion));
   }
@@ -699,21 +699,26 @@
     renderPage();
   }
   function hangulAnswer(value){
-    if (!hangulQuestion || hangulResult !== "none") return;
+    if (!hangulQuestion || hangulResult === "right" || hangulWrong.indexOf(value) !== -1) return;
     var q = hangulQuestion;
     var correct = q.kind === "pickWord" ? value === q.word : value === q.syllable;
-    hangulPicked = value;
-    hangulResult = correct ? "right" : "wrong";
-    hangulAnswered += 1; if (correct) hangulCorrect += 1;
     recordSyllable(q.syllable, q.kind === "sound" ? "소리" : q.word, correct);
-    if (correct) { addStamp("한글 " + q.syllable); speak("잘했어요!"); }
-    else { speak("다시 해볼까요. " + q.syllable); }
+    if (!correct) { hangulWrong.push(value); speak("다시 해볼까요"); renderPage(); return; }
+    hangulResult = "right";
+    hangulAnswered += 1;
+    if (hangulWrong.length === 0) hangulCorrect += 1;
+    addStamp("한글 " + q.syllable); speak("잘했어요!");
     renderPage();
+  }
+  function hOptStyle(value, correctValue){
+    if (hangulWrong.indexOf(value) !== -1) return "opt-wrong";
+    if (hangulResult === "right") return value === correctValue ? "opt-correct" : "opt-dim";
+    return "opt-neutral";
   }
   function hangulNext(){
     var avoid = hangulQuestion && hangulQuestion.kind !== "sound" ? hangulQuestion.word : undefined;
     hangulQuestion = makeHangulQuestion(hangulLesson, avoid);
-    hangulResult = "none"; hangulPicked = null;
+    hangulResult = "none"; hangulWrong = [];
     speak(questionPrompt(hangulQuestion));
     renderPage();
   }
@@ -726,17 +731,17 @@
     if (q.kind === "sound") {
       quiz = '<p class="quiz-prompt">「' + q.syllable + '」 는 어느 것일까요?</p><div class="option-grid grid-4">' +
         q.options.map(function (o) {
-          return '<button class="option-btn opt-syllable ' + optStyle(o, hangulPicked, hangulResult, q.syllable) + '" data-action="hangul-answer" data-value="' + escapeHtml(o) + '">' + escapeHtml(o) + "</button>";
+          return '<button class="option-btn opt-syllable ' + hOptStyle(o, q.syllable) + '" data-action="hangul-answer" data-value="' + escapeHtml(o) + '">' + escapeHtml(o) + "</button>";
         }).join("") + "</div>";
     } else if (q.kind === "inWord") {
       quiz = '<p class="quiz-prompt">「' + escapeHtml(q.word) + '」 에서 「' + q.syllable + '」 를 눌러요</p><div class="option-row">' +
         q.parts.map(function (p) {
-          return '<button class="option-btn opt-part ' + optStyle(p, hangulPicked, hangulResult, q.syllable) + '" data-action="hangul-answer" data-value="' + escapeHtml(p) + '">' + escapeHtml(p) + "</button>";
+          return '<button class="option-btn opt-part ' + hOptStyle(p, q.syllable) + '" data-action="hangul-answer" data-value="' + escapeHtml(p) + '">' + escapeHtml(p) + "</button>";
         }).join("") + "</div>";
     } else {
       quiz = '<p class="quiz-prompt">「' + q.syllable + '」 가 들어간 것은?</p><div class="option-grid grid-3">' +
         q.options.map(function (o) {
-          return '<button class="option-btn opt-word ' + optStyle(o.text, hangulPicked, hangulResult, q.word) + '" data-action="hangul-answer" data-value="' + escapeHtml(o.text) + '"><span class="opt-emoji">' + o.emoji + '</span><span class="opt-text">' + escapeHtml(o.text) + "</span></button>";
+          return '<button class="option-btn opt-word ' + hOptStyle(o.text, q.word) + '" data-action="hangul-answer" data-value="' + escapeHtml(o.text) + '"><span class="opt-emoji">' + o.emoji + '</span><span class="opt-text">' + escapeHtml(o.text) + "</span></button>";
         }).join("") + "</div>";
     }
     var pickerChips = syllableLessons.map(function (l) {
@@ -757,7 +762,7 @@
     var finishedCard =
       '<div class="card finish-card anim-pop">' +
       yejunHTML({ size: "lg", badge: hangulCorrect >= HANGUL_ROUND ? STAMP_TROPHY : hangulCorrect >= 3 ? STAMP_CHALLENGE : STAMP_FOCUS, says: "「" + hangulLesson.syllable + "」 잘 익혔어요! 🎉" }) +
-      '<p class="quiz-prompt" style="margin:1rem 0 0.25rem">' + HANGUL_ROUND + "문제 중 " + hangulCorrect + "개 맞혔어요</p>" +
+      '<p class="quiz-prompt" style="margin:1rem 0 0.25rem">' + HANGUL_ROUND + "문제 중 " + hangulCorrect + "개를 한 번에 맞혔어요</p>" +
       '<p class="muted" style="margin-bottom:1.25rem">정말 잘했어요! 이제 뭐 할까요?</p>' +
       '<div class="finish-actions">' +
       (nextLessonObj ? '<button class="btn-tap btn-next" data-action="hangul-pick" data-syllable="' + escapeHtml(nextLessonObj.syllable) + '">다음 글자 「' + escapeHtml(nextLessonObj.syllable) + "」</button>" : "") +
@@ -773,9 +778,9 @@
       '<div class="mastery-track"><div class="mastery-fill" style="width:' + masteryPercent(stat) + '%"></div></div></div>' +
       '<button class="btn-tap btn-outline-clay" data-action="speak" data-text="' + escapeHtml(hangulLesson.syllable) + '">🔊 소리</button></div>' +
       (hangulFinished ? finishedCard : '<div class="card quiz-card anim-pop">' + roundDots + quiz +
-      (hangulResult !== "none"
-        ? '<div class="quiz-footer">' + yejunHTML({ size: "md", pose: "warm", badge: hangulResult === "right" ? null : RETRY_STAMP, says: hangulResult === "right" ? "잘했어요! 도장 찍기 🎉" : "괜찮아요, 같이 해봐요" }) +
-          '<button class="btn-tap btn-primary" data-action="' + (hangulAnswered >= HANGUL_ROUND ? "hangul-finish" : "hangul-next") + '">' + (hangulAnswered >= HANGUL_ROUND ? "결과 보기" : "다음") + '</button></div>'
+      (hangulResult === "right" || hangulWrong.length > 0
+        ? '<div class="quiz-footer">' + yejunHTML({ size: "md", pose: "warm", badge: hangulResult === "right" ? null : RETRY_STAMP, says: hangulResult === "right" ? "잘했어요! 도장 찍기 🎉" : "괜찮아요, 다른 걸 골라봐요" }) +
+          (hangulResult === "right" ? '<button class="btn-tap btn-primary" data-action="' + (hangulAnswered >= HANGUL_ROUND ? "hangul-finish" : "hangul-next") + '">' + (hangulAnswered >= HANGUL_ROUND ? "결과 보기" : "다음") + '</button>' : "") + '</div>'
         : "") +
       "</div>") + "</main>";
   }
@@ -1008,7 +1013,7 @@
   function currentRouteName(){ return ROUTES[location.hash || "#/"] || "home"; }
   var lastRoute = null;
   function resetEphemeralFor(name){
-    if (name === "hangul") { hangulLesson = null; hangulQuestion = null; hangulResult = "none"; hangulPicked = null; }
+    if (name === "hangul") { hangulLesson = null; hangulQuestion = null; hangulResult = "none"; hangulWrong = []; }
     if (name === "numbers") { numbersMode = "count"; numbersTask = null; numbersResult = "none"; numbersPicked = null; numbersOrderNext = 1; numbersOrderTiles = []; numbersBlank = null; numbersBlankFilled = 0; numbersBlankWrong = null; }
     if (name === "game") { gameStarted = false; gameDone = false; gameTiles = []; }
   }
