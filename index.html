@@ -742,7 +742,7 @@
       '<a class="btn-tap back-btn" href="#/">홈으로</a></div></div>';
 
     app.innerHTML =
-      learnHeaderHTML("한글 배우기", progress.stamps, "focus") +
+      learnHeaderHTML("한글 배우기", progress.stamps, "neutral") +
       '<main class="learn-main"><p class="hint" style="margin-top:0">글자를 골라서 다시 연습할 수 있어요</p>' +
       '<div class="syllable-picker">' + pickerChips + '</div>' +
       '<div class="card lesson-strip"><span class="lesson-syllable">' + hangulLesson.syllable + "</span>" +
@@ -893,7 +893,7 @@
     }
 
     app.innerHTML =
-      learnHeaderHTML("숫자 배우기", progress.stamps, "focus") +
+      learnHeaderHTML("숫자 배우기", progress.stamps, "neutral") +
       '<main class="learn-main"><div class="mode-row">' + modeButtons + '</div>' +
       '<div class="peek-wrap">' + peekHTML(numbersTurn) + '<div class="card quiz-card">' + body +
       (numbersResult !== "none"
@@ -951,7 +951,7 @@
     var unlocked = progress.stamps >= 5;
     if (!unlocked) {
       app.innerHTML =
-        learnHeaderHTML("보너스 놀이", progress.stamps, "serious") +
+        learnHeaderHTML("보너스 놀이", progress.stamps, "neutral") +
         '<main class="learn-main narrow"><div class="card locked-card">' +
         yejunHTML({ size: "lg", pose: "threeQuarter", says: "도장 5개 모으면 놀자!" }) +
         '<p class="quiz-prompt">도장이 조금 더 필요해요</p>' +
