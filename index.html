@@ -302,7 +302,16 @@
   .dot-big{ width: 2.75rem; height: 2.75rem; border-radius: 999px; background: var(--sky); }
   .dot-big.small{ width: 2.25rem; height: 2.25rem; }
 
-  .mode-row{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+  .mode-row{ display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+  @media (min-width: 640px){ .mode-row{ grid-template-columns: repeat(4, 1fr); } }
+  .seq-row{ display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem; padding: 1rem; border-radius: 1.5rem; background: var(--cream); }
+  .seq-cell{ aspect-ratio: 1; border-radius: 1rem; display: grid; place-items: center; font-family: var(--font-display); font-size: 1.9rem; font-variant-numeric: tabular-nums; }
+  .seq-fixed{ background: var(--paper); border: 2px solid var(--ink-10); }
+  .seq-filled{ background: var(--sagesoft); border: 2px solid var(--sage); color: var(--sage); }
+  .seq-current{ background: var(--skysoft); border: 2px dashed var(--sky); color: var(--sky); }
+  .seq-empty{ border: 2px dashed var(--ink-25); color: var(--ink-25); }
+  .option-row.wrap{ grid-auto-flow: row; grid-template-columns: repeat(auto-fit, minmax(4.5rem, 5.5rem)); margin-top: 1.5rem; }
+
   .mode-row.two{ grid-template-columns: repeat(2, 1fr); margin-bottom: 1.5rem; }
   .mode-btn{
     min-height: 3.5rem;
@@ -729,6 +738,31 @@
   // ---------- numbers ----------
   var numbersMode = "count", numbersTask = null, numbersResult = "none", numbersPicked = null;
   var numbersOrderNext = 1, numbersOrderTiles = [];
+  var numbersBlank = null, numbersBlankFilled = 0, numbersBlankWrong = null;
+  function makeBlank(){
+    var start = 1 + Math.floor(Math.random() * 6);
+    var seq = [0,1,2,3,4].map(function (i) { return start + i; });
+    var k = pickRandom([1,1,2,2,3]);
+    var blankIdx = shuffle([0,1,2,3,4]).slice(0, k).sort(function (a, b) { return a - b; });
+    var missing = blankIdx.map(function (i) { return seq[i]; });
+    var distract = shuffle(numberItems.map(function (n) { return n.value; }).filter(function (v) { return missing.indexOf(v) === -1; })).slice(0, 2);
+    return { seq: seq, blankIdx: blankIdx, options: shuffle(missing.concat(distract)) };
+  }
+  function numbersTapBlank(n){
+    if (!numbersBlank || numbersResult !== "none") return;
+    var expected = numbersBlank.blankIdx[numbersBlankFilled];
+    if (expected === undefined) return;
+    if (n !== numbersBlank.seq[expected]) { numbersBlankWrong = n; speak("다시 찾아봐요"); renderPage(); return; }
+    numbersBlankWrong = null;
+    speak(String(n));
+    numbersBlankFilled += 1;
+    if (numbersBlankFilled === numbersBlank.blankIdx.length) {
+      addStamp("숫자 빈칸");
+      numbersResult = "right";
+      speak("맞았어요. 잘했어요!");
+    }
+    renderPage();
+  }
 
   function makeNumberTask(mode){
     var item = pickRandom(numberItems);
@@ -741,6 +775,13 @@
   }
   function newNumberTask(mode){
     numbersResult = "none"; numbersPicked = null;
+    numbersBlankFilled = 0; numbersBlankWrong = null;
+    if (mode === "blank") {
+      numbersBlank = makeBlank();
+      numbersTask = null;
+      speak("빈칸에 들어갈 숫자는 무엇일까요?");
+      return;
+    }
     if (mode === "order") {
       numbersOrderNext = 1;
       numbersOrderTiles = shuffle(numberItems.map(function (n) { return n.value; }));
@@ -782,10 +823,11 @@
   }
   function renderNumbers(){
     var progress = getProgress();
-    if (numbersMode !== "order" && numbersTask === null) newNumberTask("count");
+    if (numbersMode !== "order" && numbersMode !== "blank" && numbersTask === null) newNumberTask("count");
+    if (numbersMode === "blank" && numbersBlank === null) newNumberTask("blank");
     if (numbersMode === "order" && numbersOrderTiles.length === 0) newNumberTask("order");
 
-    var modeButtons = [["count", "몇 개?"], ["native", "하나 둘 셋"], ["order", "순서대로"]]
+    var modeButtons = [["count", "몇 개?"], ["native", "하나 둘 셋"], ["order", "순서대로"], ["blank", "빈칸 채우기"]]
       .map(function (pair) {
         return '<button class="mode-btn ' + (numbersMode === pair[0] ? "active" : "") + '" data-action="numbers-mode" data-mode="' + pair[0] + '">' + pair[1] + "</button>";
       }).join("");
@@ -806,6 +848,19 @@
         numbersTask.options.map(function (o) {
           return '<button class="option-btn opt-native ' + optStyle(o, numbersPicked, numbersResult, item.native) + '" data-action="numbers-answer" data-value="' + escapeHtml(o) + '">' + escapeHtml(o) + "</button>";
         }).join("") + "</div>";
+    } else if (numbersMode === "blank" && numbersBlank) {
+      var bl = numbersBlank, cells = "";
+      bl.seq.forEach(function (n, i) {
+        var bi = bl.blankIdx.indexOf(i), isBlank = bi !== -1, filled = isBlank && bi < numbersBlankFilled, cur = isBlank && bi === numbersBlankFilled && numbersResult === "none";
+        var cls = !isBlank ? "seq-fixed" : filled ? "seq-filled anim-stamp" : cur ? "seq-current" : "seq-empty";
+        cells += "<div class=\"seq-cell " + cls + "\">" + (!isBlank || filled ? n : "?") + "</div>";
+      });
+      var opts = bl.options.map(function (o) {
+        var used = bl.blankIdx.slice(0, numbersBlankFilled).some(function (i) { return bl.seq[i] === o; });
+        var c = used ? "opt-correct opt-dim" : numbersBlankWrong === o ? "opt-wrong" : "opt-neutral";
+        return "<button class=\"option-btn opt-number " + c + "\" data-action=\"numbers-blank\" data-n=\"" + o + "\"" + (used ? " disabled" : "") + ">" + o + "</button>";
+      }).join("");
+      body = "<p class=\"quiz-prompt\">빈칸에 들어갈 숫자는?</p><p class=\"quiz-sub\">" + (bl.blankIdx.length > 1 ? "빈칸이 " + bl.blankIdx.length + "개예요. 앞에서부터 차례로 채워요" : "숫자를 순서대로 읽어 봐요") + "</p><div class=\"seq-row\">" + cells + "</div><div class=\"option-row wrap\">" + opts + "</div>";
     } else if (numbersMode === "order") {
       body = '<p class="quiz-prompt">1부터 10까지 순서대로 눌러요</p><p class="quiz-sub">다음 숫자: <span class="accent-num">' + Math.min(numbersOrderNext, 10) + '</span></p><div class="option-grid grid-5">' +
         numbersOrderTiles.map(function (n) {
@@ -907,7 +962,7 @@
   var lastRoute = null;
   function resetEphemeralFor(name){
     if (name === "hangul") { hangulLesson = null; hangulQuestion = null; hangulResult = "none"; hangulPicked = null; }
-    if (name === "numbers") { numbersMode = "count"; numbersTask = null; numbersResult = "none"; numbersPicked = null; numbersOrderNext = 1; numbersOrderTiles = []; }
+    if (name === "numbers") { numbersMode = "count"; numbersTask = null; numbersResult = "none"; numbersPicked = null; numbersOrderNext = 1; numbersOrderTiles = []; numbersBlank = null; numbersBlankFilled = 0; numbersBlankWrong = null; }
     if (name === "game") { gameStarted = false; gameDone = false; gameTiles = []; }
   }
   function renderPage(){
@@ -934,6 +989,7 @@
     else if (action === "numbers-mode") numbersSetMode(el.dataset.mode);
     else if (action === "numbers-answer") numbersAnswer(el.dataset.value);
     else if (action === "numbers-next") numbersNext();
+    else if (action === "numbers-blank") numbersTapBlank(Number(el.dataset.n));
     else if (action === "numbers-order") numbersTapOrder(Number(el.dataset.n));
     else if (action === "game-tap") gameTap(Number(el.dataset.id));
     else if (action === "game-mode") gameSwitchMode(el.dataset.mode);
