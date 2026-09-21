@@ -75,6 +75,12 @@
     color: var(--ink-60);
   }
   .preview-banner b{ color: var(--ink); font-weight: 600; }
+  #sound-help{ position: fixed; left: 0.75rem; right: 0.75rem; top: 0.75rem; max-width: 36rem; margin: 0 auto; z-index: 60; background: var(--paper); border: 1px solid oklch(0.64 0.152 40 / 0.4); border-radius: 1rem; padding: 0.9rem 1rem; box-shadow: var(--shadow-soft); }
+  #sound-help[hidden]{ display: none; }
+  .sound-help-text{ font-size: 0.85rem; line-height: 1.6; }
+  .sound-help-actions{ display: flex; gap: 0.5rem; margin-top: 0.7rem; }
+  .sound-help-actions button{ min-height: 2.5rem; padding: 0 1rem; border-radius: 0.75rem; background: var(--clay); color: var(--cream); font-size: 0.85rem; font-weight: 500; }
+  .sound-help-actions button.ghost{ background: transparent; color: var(--ink); border: 1px solid var(--ink-15); }
 
   /* ---- shell ---- */
   .home-main, .learn-main{
@@ -380,6 +386,7 @@
 </style>
 
 <div class="preview-banner">🔧 <b>정적 미리보기</b> — 이 기기에 Node.js/Bun이 없어 실제 서버 없이 화면과 동작만 재현했어요. 실제 코드와 100% 같지 않을 수 있어요.</div>
+<div id="sound-help" hidden role="status"><p class="sound-help-text"></p><div class="sound-help-actions"><button id="sound-test" type="button">소리 테스트</button><button id="sound-close" type="button" class="ghost">닫기</button></div></div>
 <div id="app"></div>
 
 <script>
@@ -522,14 +529,74 @@
   }
 
   // ---------- speech (mirrors src/lib/speak.ts) ----------
+  var TTS = { supported: "speechSynthesis" in window, voices: [], unlocked: false, lastGesture: 0 };
+  var IN_APP = /KAKAOTALK|NAVER\(|Instagram|FBAN|FBAV|Line\/|DaumApps/i;
+  var SOUND_MSG = {
+    unsupported: "이 브라우저에서는 소리가 나오지 않아요. 안드로이드는 크롬, 아이폰은 사파리로 열어 주세요.",
+    "in-app": "카카오톡 같은 앱 안에서는 소리가 나오지 않을 수 있어요. 메뉴(⋮ 또는 공유 버튼)에서 '다른 브라우저로 열기'를 눌러 크롬이나 사파리로 열어 주세요.",
+    "no-korean-voice": "이 기기에 한국어 음성이 없어요. 기기 설정의 '텍스트 음성 변환(TTS)'에서 한국어 음성을 설치해 주세요.",
+    silent: "소리가 안 나와요? 기기 볼륨을 올리고, 무음(진동) 모드가 꺼져 있는지 확인해 주세요."
+  };
+  function loadVoices(){ try { TTS.voices = window.speechSynthesis.getVoices() || []; } catch (e) {} }
+  if (TTS.supported) {
+    loadVoices();
+    try { window.speechSynthesis.addEventListener("voiceschanged", loadVoices); } catch (e) { window.speechSynthesis.onvoiceschanged = loadVoices; }
+    var onGesture = function () {
+      TTS.lastGesture = Date.now();
+      if (TTS.unlocked) return;
+      TTS.unlocked = true;
+      try { var z = new SpeechSynthesisUtterance(" "); z.volume = 0; window.speechSynthesis.speak(z); } catch (e) {}
+    };
+    window.addEventListener("pointerdown", onGesture, true);
+    window.addEventListener("keydown", onGesture, true);
+  }
+  function soundEnvProblem(){
+    if (!TTS.supported) return "unsupported";
+    if (IN_APP.test(navigator.userAgent)) return "in-app";
+    return null;
+  }
+  function soundReason(){
+    var env = soundEnvProblem(); if (env) return env;
+    if (!TTS.voices.some(function (v) { return /^ko/i.test(v.lang); })) return "no-korean-voice";
+    return "silent";
+  }
+  function koVoice(){
+    var a = TTS.voices.filter(function (v) { return /^ko([-_]|$)/i.test(v.lang); })[0];
+    if (a) return a;
+    return TTS.voices.filter(function (v) { return /korean|한국/i.test(v.name); })[0] || null;
+  }
+  var soundHelpClosed = false;
+  function showSoundHelp(reason){
+    if (soundHelpClosed) return;
+    var box = document.getElementById("sound-help");
+    if (!box) return;
+    box.hidden = false;
+    box.querySelector(".sound-help-text").textContent = "🔇 " + SOUND_MSG[reason];
+    box.setAttribute("data-reason", reason);
+  }
+  function hideSoundHelpIfFixed(){
+    var box = document.getElementById("sound-help");
+    if (!box || box.hidden) return;
+    var r = box.getAttribute("data-reason");
+    if (r !== "unsupported" && r !== "in-app") box.hidden = true;
+  }
   function speak(text, rate){
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    if (!TTS.supported) return;
     try {
-      window.speechSynthesis.cancel();
+      var synth = window.speechSynthesis;
+      var busy = synth.speaking || synth.pending;
+      if (busy) synth.cancel();
+      if (synth.paused) synth.resume();
       var u = new SpeechSynthesisUtterance(text);
       u.lang = "ko-KR";
       u.rate = rate || 0.8;
-      window.speechSynthesis.speak(u);
+      var v = koVoice(); if (v) u.voice = v;
+      var started = false;
+      u.onstart = function () { started = true; hideSoundHelpIfFixed(); };
+      if (Date.now() - TTS.lastGesture < 1500) {
+        setTimeout(function () { if (!started) showSoundHelp(soundReason()); }, 2200);
+      }
+      if (busy) setTimeout(function () { synth.speak(u); }, 80); else synth.speak(u);
     } catch (e) {}
   }
 
@@ -1047,6 +1114,11 @@
     else if (action === "game-mode") gameSwitchMode(el.dataset.mode);
     else if (action === "game-restart") { startGame(gameMode); renderPage(); }
   });
+
+  document.getElementById("sound-test").addEventListener("click", function () { speak("안녕 예준아"); });
+  document.getElementById("sound-close").addEventListener("click", function () { soundHelpClosed = true; document.getElementById("sound-help").hidden = true; });
+  var envProblem = soundEnvProblem();
+  if (envProblem) showSoundHelp(envProblem);
 
   renderPage();
 })();
