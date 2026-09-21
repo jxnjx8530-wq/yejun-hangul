@@ -554,9 +554,6 @@
     try { window.speechSynthesis.addEventListener("voiceschanged", function () { loadVoices(); renderVoicePanel(); }); } catch (e) { window.speechSynthesis.onvoiceschanged = loadVoices; }
     var onGesture = function () {
       TTS.lastGesture = Date.now();
-      if (TTS.unlocked) return;
-      TTS.unlocked = true;
-      try { var z = new SpeechSynthesisUtterance(" "); z.volume = 0; window.speechSynthesis.speak(z); } catch (e) {}
     };
     window.addEventListener("pointerdown", onGesture, true);
     window.addEventListener("keydown", onGesture, true);
@@ -608,7 +605,7 @@
     var r = box.getAttribute("data-reason");
     if (r !== "unsupported" && r !== "in-app") box.hidden = true;
   }
-  function speak(text, rate, voiceName){
+  function speakNow(text, rate, voiceName){
     if (!TTS.supported) return;
     try {
       var synth = window.speechSynthesis;
@@ -618,7 +615,6 @@
       var u = new SpeechSynthesisUtterance(text);
       u.lang = "ko-KR";
       u.rate = rate || 0.88;
-      u.pitch = 1.05;
       var v = chosenVoice(voiceName); if (v) u.voice = v;
       var started = false;
       u.onstart = function () { started = true; hideSoundHelpIfFixed(); };
@@ -634,6 +630,12 @@
       }
       if (busy) setTimeout(function () { synth.speak(u); }, 80); else synth.speak(u);
     } catch (e) {}
+  }
+  var speakTimer = null;
+  function speak(text, rate, voiceName){
+    if (!TTS.supported) return;
+    clearTimeout(speakTimer);
+    speakTimer = setTimeout(function () { speakNow(text, rate, voiceName); }, 140);
   }
 
   function escapeHtml(s){
