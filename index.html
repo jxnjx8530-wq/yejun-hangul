@@ -587,7 +587,7 @@
     return TTS.voices.filter(function (v) { return /^ko([-_]|$)/i.test(v.lang) || /korean|한국/i.test(v.name); })
       .sort(function (a, b) { return voiceScore(b) - voiceScore(a); });
   }
-  function voiceLabel(v){ return v.name.replace(/^Microsofts+/i, "").replace(/s*-s*Korean.*$/i, ""); }
+  function voiceLabel(v){ return v.name.replace(/^Microsoft\s+/i, "").replace(/\s*-\s*Korean.*$/i, ""); }
   function preferredVoiceName(){ try { return localStorage.getItem(VOICE_KEY); } catch (e) { return null; } }
   function chosenVoice(override){
     var list = koreanVoices(), wanted = override || preferredVoiceName();
