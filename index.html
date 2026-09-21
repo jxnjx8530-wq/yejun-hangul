@@ -364,6 +364,17 @@
   .peek{ position: absolute; right: 1.25rem; bottom: 100%; height: 4rem; overflow: hidden; pointer-events: none; }
   .peek .peek-fig{ width: 5rem; }
   .quiz-footer .yejun-badge.yejun-md{ width: 4.75rem; }
+  .voice-wrap{ text-align: center; }
+  .voice-btn{ border: 1px solid var(--ink-15); background: var(--paper); border-radius: 999px; padding: 0.5rem 1.25rem; font-size: 0.85rem; color: var(--ink-60); }
+  #voice-panel{ max-width: 28rem; margin: 1rem auto 0; padding: 1.25rem; text-align: left; }
+  #voice-panel[hidden]{ display: none; }
+  .voice-row{ display: flex; align-items: center; gap: 0.5rem; border: 1px solid var(--ink-10); border-radius: 1rem; padding: 0.7rem; margin-bottom: 0.5rem; }
+  .voice-row.on{ border-color: var(--clay); background: oklch(0.89 0.05 45 / 0.4); }
+  .voice-name{ flex: 1; min-width: 0; font-size: 0.85rem; }
+  .voice-name b{ display: block; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .voice-rec{ font-size: 0.72rem; color: var(--clay); }
+  .voice-mini{ border: 1px solid var(--ink-15); background: var(--paper); border-radius: 0.75rem; padding: 0.5rem 0.8rem; font-size: 0.82rem; }
+  .voice-mini.pick{ background: var(--clay); color: var(--cream); border-color: var(--clay); }
   .stamp-img{ display: block; width: 100%; aspect-ratio: 1; }
   .yejun-badge{ display: block; height: auto; flex-shrink: 0; }
   #stamp-pop{ position: fixed; left: 0; right: 0; top: 28%; display: flex; justify-content: center; z-index: 50; pointer-events: none; }
@@ -540,7 +551,7 @@
   function loadVoices(){ try { TTS.voices = window.speechSynthesis.getVoices() || []; } catch (e) {} }
   if (TTS.supported) {
     loadVoices();
-    try { window.speechSynthesis.addEventListener("voiceschanged", loadVoices); } catch (e) { window.speechSynthesis.onvoiceschanged = loadVoices; }
+    try { window.speechSynthesis.addEventListener("voiceschanged", function () { loadVoices(); renderVoicePanel(); }); } catch (e) { window.speechSynthesis.onvoiceschanged = loadVoices; }
     var onGesture = function () {
       TTS.lastGesture = Date.now();
       if (TTS.unlocked) return;
@@ -560,10 +571,27 @@
     if (!TTS.voices.some(function (v) { return /^ko/i.test(v.lang); })) return "no-korean-voice";
     return "silent";
   }
-  function koVoice(){
-    var a = TTS.voices.filter(function (v) { return /^ko([-_]|$)/i.test(v.lang); })[0];
-    if (a) return a;
-    return TTS.voices.filter(function (v) { return /korean|한국/i.test(v.name); })[0] || null;
+  var VOICE_KEY = "yejun-voice";
+  function voiceScore(v){
+    var n = v.name, s = 0;
+    if (/natural|neural|online/i.test(n)) s += 100;
+    if (/google/i.test(n)) s += 60;
+    if (/siri|enhanced|premium/i.test(n)) s += 50;
+    if (/선히|sunhi|sun-hi|yuna|유나/i.test(n)) s += 25;
+    if (/multilingual/i.test(n)) s -= 5;
+    if (/heami|해미/i.test(n)) s -= 20;
+    if (!v.localService) s += 5;
+    return s;
+  }
+  function koreanVoices(){
+    return TTS.voices.filter(function (v) { return /^ko([-_]|$)/i.test(v.lang) || /korean|한국/i.test(v.name); })
+      .sort(function (a, b) { return voiceScore(b) - voiceScore(a); });
+  }
+  function voiceLabel(v){ return v.name.replace(/^Microsofts+/i, "").replace(/s*-s*Korean.*$/i, ""); }
+  function preferredVoiceName(){ try { return localStorage.getItem(VOICE_KEY); } catch (e) { return null; } }
+  function chosenVoice(override){
+    var list = koreanVoices(), wanted = override || preferredVoiceName();
+    return list.filter(function (v) { return v.name === wanted; })[0] || list[0] || null;
   }
   var soundHelpClosed = false;
   function showSoundHelp(reason){
@@ -580,7 +608,7 @@
     var r = box.getAttribute("data-reason");
     if (r !== "unsupported" && r !== "in-app") box.hidden = true;
   }
-  function speak(text, rate){
+  function speak(text, rate, voiceName){
     if (!TTS.supported) return;
     try {
       var synth = window.speechSynthesis;
@@ -589,10 +617,18 @@
       if (synth.paused) synth.resume();
       var u = new SpeechSynthesisUtterance(text);
       u.lang = "ko-KR";
-      u.rate = rate || 0.8;
-      var v = koVoice(); if (v) u.voice = v;
+      u.rate = rate || 0.88;
+      u.pitch = 1.05;
+      var v = chosenVoice(voiceName); if (v) u.voice = v;
       var started = false;
       u.onstart = function () { started = true; hideSoundHelpIfFixed(); };
+      u.onerror = function (e) {
+        if (e.error === "interrupted" || e.error === "canceled") return;
+        if (started || !v || v.localService) return;
+        var local = koreanVoices().filter(function (x) { return x.localService; })[0];
+        if (!local) return;
+        var r = new SpeechSynthesisUtterance(text); r.lang = "ko-KR"; r.rate = u.rate; r.voice = local; synth.speak(r);
+      };
       if (Date.now() - TTS.lastGesture < 1500) {
         setTimeout(function () { if (!started) showSoundHelp(soundReason()); }, 2200);
       }
@@ -714,7 +750,21 @@
       '<div class="card mastery-card"><div class="section-title sage">글자별로 얼마나 알까?</div>' +
       '<div class="mastery-list">' + masteryRows + "</div>" +
       '<p class="hint">서로 다른 단어 3개에서 맞히고, 연속 3번 맞혀야 "안다"로 인정해요.</p></div>' +
-      "</section></main>";
+      "</section><div class=\"voice-wrap\"><button class=\"voice-btn\" data-action=\"voice-toggle\">🔊 목소리 바꾸기</button><div id=\"voice-panel\" class=\"card\" hidden></div></div></main>";
+  }
+  var SAMPLE_LINE = "안녕 예준아, 같이 공부하자";
+  function renderVoicePanel(){
+    var panel = document.getElementById("voice-panel");
+    if (!panel || panel.hidden) return;
+    var list = koreanVoices(), sel = preferredVoiceName() || (list[0] && list[0].name);
+    var html = "<p class=\"section-title\" style=\"margin-bottom:0.25rem\">안내 목소리 고르기</p><p class=\"hint\" style=\"margin:0 0 1rem\">「듣기」를 눌러 들어보고, 가장 사람 같은 목소리를 골라 주세요. 위쪽에 있을수록 자연스러워요.</p>";
+    if (!list.length) html += "<p class=\"hint\">이 기기에서 쓸 수 있는 한국어 목소리를 찾지 못했어요. 크롬이나 엣지, 사파리로 열어 보세요.</p>";
+    list.forEach(function (v, i) {
+      html += "<div class=\"voice-row" + (sel === v.name ? " on" : "") + "\"><div class=\"voice-name\"><b>" + escapeHtml(voiceLabel(v)) + "</b>" + (i === 0 ? "<span class=\"voice-rec\">추천</span>" : "") + "</div>" +
+        "<button class=\"voice-mini\" data-action=\"voice-hear\" data-voice=\"" + escapeHtml(v.name) + "\">듣기</button>" +
+        "<button class=\"voice-mini pick\" data-action=\"voice-pick\" data-voice=\"" + escapeHtml(v.name) + "\">" + (sel === v.name ? "사용 중" : "선택") + "</button></div>";
+    });
+    panel.innerHTML = html;
   }
 
   // ---------- hangul ----------
@@ -1100,6 +1150,9 @@
     if (!el) return;
     var action = el.dataset.action;
     if (action === "speak") speak(el.dataset.text);
+    else if (action === "voice-toggle") { var vp = document.getElementById("voice-panel"); vp.hidden = !vp.hidden; renderVoicePanel(); }
+    else if (action === "voice-hear") speak(SAMPLE_LINE, 0.88, el.dataset.voice);
+    else if (action === "voice-pick") { try { localStorage.setItem(VOICE_KEY, el.dataset.voice); } catch (e) {} renderVoicePanel(); }
     else if (action === "hangul-answer") hangulAnswer(el.dataset.value);
     else if (action === "hangul-next") hangulNext();
     else if (action === "hangul-pick") hangulSelectSyllable(el.dataset.syllable);
