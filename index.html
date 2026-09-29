@@ -14,6 +14,7 @@
     --sky: oklch(0.69 0.06 240);
     --skysoft: oklch(0.91 0.028 240);
     --sun: oklch(0.82 0.13 85);
+    --sunsoft: oklch(0.93 0.06 85);
     --ink-08: oklch(0.31 0.017 66 / 0.08);
     --ink-10: oklch(0.31 0.017 66 / 0.10);
     --ink-15: oklch(0.31 0.017 66 / 0.15);
@@ -182,6 +183,7 @@
   .big-card.tone-clay{ background: var(--claysoft); border-color: oklch(0.64 0.152 40 / 0.3); }
   .big-card.tone-sky{ background: var(--skysoft); border-color: oklch(0.69 0.06 240 / 0.3); }
   .big-card.tone-sage{ background: var(--sagesoft); border-color: oklch(0.68 0.05 155 / 0.3); }
+  .big-card.tone-sun{ background: var(--sunsoft); border-color: oklch(0.82 0.13 85 / 0.5); }
   .big-card-face{
     width: 4rem; height: 4rem; flex-shrink: 0;
     border-radius: 1rem; background: var(--paper);
@@ -388,12 +390,28 @@
   @media (min-width: 640px){
     .hero{ flex-direction: row; padding: 2.5rem; }
     .hero-figure{ width: 15rem; }
-    .big-cards{ grid-template-columns: repeat(3, 1fr); }
+    .big-cards{ grid-template-columns: repeat(2, 1fr); }
     .home-header, .learn-header, .home-main, .learn-main{ padding-left: 2rem; padding-right: 2rem; }
   }
   @media (min-width: 1024px){
     .two-col{ grid-template-columns: 1fr 1fr; }
+    .big-cards{ grid-template-columns: repeat(4, 1fr); }
   }
+
+  .word-card{ padding: 2.5rem 2rem; text-align: center; }
+  .word-card-emoji{ font-size: 5.5rem; line-height: 1; margin-bottom: 1.25rem; }
+  @media (min-width: 640px){ .word-card-emoji{ font-size: 7rem; } }
+  .word-card-text{ font-family: var(--font-display); font-size: 2.25rem; margin-bottom: 2rem; }
+  @media (min-width: 640px){ .word-card-text{ font-size: 3rem; } }
+  .word-add-toggle{ display: flex; margin: 2rem auto 0; }
+  .word-add-panel{ margin-top: 1rem; padding: 1.25rem; text-align: left; }
+  .word-add-row{ display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .word-emoji-input{ width: 4.5rem; border: 1px solid var(--ink-15); background: var(--cream); border-radius: 0.75rem; padding: 0.5rem; text-align: center; font-size: 1.4rem; }
+  .word-text-input{ flex: 1; min-width: 10rem; border: 1px solid var(--ink-15); background: var(--cream); border-radius: 0.75rem; padding: 0.5rem 1rem; font-family: var(--font-display); font-size: 1.05rem; }
+  .word-add-btn{ border-radius: 0.75rem; background: var(--clay); color: var(--cream); padding: 0.5rem 1.25rem; font-family: var(--font-display); }
+  .word-custom-list{ list-style: none; margin: 1rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+  .word-custom-row{ display: flex; align-items: center; justify-content: space-between; background: var(--cream); border-radius: 0.75rem; padding: 0.5rem 0.75rem; }
+  .word-custom-del{ color: var(--ink-50); padding: 0 0.4rem; }
 </style>
 
 <div class="preview-banner">🔧 <b>정적 미리보기</b> — 이 기기에 Node.js/Bun이 없어 실제 서버 없이 화면과 동작만 재현했어요. 실제 코드와 100% 같지 않을 수 있어요.</div>
@@ -474,6 +492,80 @@
     return a;
   }
   function pickRandom(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+
+  // ---------- word bank (mirrors src/lib/word-bank.ts) ----------
+  var wordBank = [
+    {text:"엄마",emoji:"👩",group:"가족"},{text:"아빠",emoji:"👨",group:"가족"},{text:"형",emoji:"👦",group:"가족"},
+    {text:"할머니",emoji:"👵",group:"가족"},{text:"할아버지",emoji:"👴",group:"가족"},{text:"친구",emoji:"🧑‍🤝‍🧑",group:"가족"},{text:"선생님",emoji:"🧑‍🏫",group:"가족"},
+    {text:"물",emoji:"💧",group:"먹을것"},{text:"밥",emoji:"🍚",group:"먹을것"},{text:"빵",emoji:"🍞",group:"먹을것"},{text:"커피",emoji:"☕",group:"먹을것"},
+    {text:"약",emoji:"💊",group:"먹을것"},{text:"김치",emoji:"🥬",group:"먹을것"},{text:"계란",emoji:"🥚",group:"먹을것"},{text:"바나나",emoji:"🍌",group:"먹을것"},
+    {text:"딸기",emoji:"🍓",group:"먹을것"},{text:"사과",emoji:"🍎",group:"먹을것"},{text:"키위",emoji:"🥝",group:"먹을것"},{text:"수박",emoji:"🍉",group:"먹을것"},
+    {text:"배",emoji:"🍐",group:"먹을것"},{text:"라면",emoji:"🍜",group:"먹을것"},{text:"두부",emoji:"🍲",group:"먹을것"},{text:"포도",emoji:"🍇",group:"먹을것"},
+    {text:"과자",emoji:"🍪",group:"먹을것"},{text:"초콜릿",emoji:"🍫",group:"먹을것"},{text:"아이스크림",emoji:"🍦",group:"먹을것"},{text:"음료수",emoji:"🥤",group:"먹을것"},
+    {text:"케이크",emoji:"🎂",group:"먹을것"},{text:"우유",emoji:"🥛",group:"먹을것"},{text:"시리얼",emoji:"🥣",group:"먹을것"},{text:"소시지",emoji:"🌭",group:"먹을것"},
+    {text:"가지",emoji:"🍆",group:"먹을것"},{text:"배추",emoji:"🥬",group:"먹을것"},
+    {text:"눈",emoji:"👁️",group:"몸"},{text:"코",emoji:"👃",group:"몸"},{text:"입",emoji:"👄",group:"몸"},{text:"발",emoji:"🦶",group:"몸"},
+    {text:"손",emoji:"✋",group:"몸"},{text:"엉덩이",emoji:"🍑",group:"몸"},{text:"머리",emoji:"🧒",group:"몸"},{text:"머리카락",emoji:"💇",group:"몸"},
+    {text:"컵",emoji:"🥤",group:"집안"},{text:"가방",emoji:"🎒",group:"집안"},{text:"소파",emoji:"🛋️",group:"집안"},{text:"리모컨",emoji:"📱",group:"집안"},
+    {text:"티브이",emoji:"📺",group:"집안"},{text:"식탁",emoji:"🍽️",group:"집안"},{text:"침대",emoji:"🛏️",group:"집안"},{text:"이불",emoji:"🛌",group:"집안"},
+    {text:"베개",emoji:"🛏️",group:"집안"},{text:"수건",emoji:"🧻",group:"집안"},{text:"칫솔",emoji:"🪥",group:"집안"},{text:"치약",emoji:"🧴",group:"집안"},
+    {text:"비누",emoji:"🧼",group:"집안"},{text:"거울",emoji:"🪞",group:"집안"},{text:"냉장고",emoji:"🧊",group:"집안"},{text:"에어컨",emoji:"❄️",group:"집안"},
+    {text:"싱크대",emoji:"🚰",group:"집안"},{text:"숟가락",emoji:"🥄",group:"집안"},{text:"젓가락",emoji:"🥢",group:"집안"},{text:"바구니",emoji:"🧺",group:"집안"},
+    {text:"빨래",emoji:"🧺",group:"집안"},{text:"쓰레기",emoji:"🗑️",group:"집안"},{text:"휴지",emoji:"🧻",group:"집안"},{text:"핸드폰",emoji:"📱",group:"집안"},
+    {text:"카메라",emoji:"📷",group:"집안"},{text:"사진",emoji:"🖼️",group:"집안"},{text:"영상",emoji:"🎥",group:"집안"},{text:"유튜브",emoji:"📺",group:"집안"},
+    {text:"문",emoji:"🚪",group:"집안"},{text:"계단",emoji:"🪜",group:"집안"},{text:"엘리베이터",emoji:"🛗",group:"집안"},{text:"로션",emoji:"🧴",group:"집안"},
+    {text:"부채",emoji:"🪭",group:"집안"},{text:"물병",emoji:"🍼",group:"집안"},{text:"책",emoji:"📖",group:"집안"},{text:"총",emoji:"🔫",group:"집안"},
+    {text:"빗",emoji:"💇",group:"집안"},{text:"박스",emoji:"📦",group:"집안"},
+    {text:"학교",emoji:"🏫",group:"밖에서"},{text:"집",emoji:"🏠",group:"밖에서"},{text:"할머니집",emoji:"🏠",group:"밖에서"},{text:"교회",emoji:"⛪",group:"밖에서"},
+    {text:"마트",emoji:"🛒",group:"밖에서"},{text:"다이소",emoji:"🛍️",group:"밖에서"},{text:"병원",emoji:"🏥",group:"밖에서"},{text:"약국",emoji:"💊",group:"밖에서"},
+    {text:"치과",emoji:"🦷",group:"밖에서"},{text:"미용실",emoji:"💈",group:"밖에서"},{text:"놀이터",emoji:"🛝",group:"밖에서"},{text:"화장실",emoji:"🚽",group:"밖에서"},
+    {text:"아파트",emoji:"🏢",group:"밖에서"},{text:"바다",emoji:"🌊",group:"밖에서"},{text:"비",emoji:"🌧️",group:"밖에서"},{text:"우산",emoji:"☂️",group:"밖에서"},
+    {text:"나무",emoji:"🌳",group:"밖에서"},{text:"꽃",emoji:"🌸",group:"밖에서"},
+    {text:"기차",emoji:"🚆",group:"탈것"},{text:"칙칙폭폭",emoji:"🚂",group:"탈것"},{text:"버스",emoji:"🚌",group:"탈것"},{text:"택시",emoji:"🚕",group:"탈것"},
+    {text:"비행기",emoji:"✈️",group:"탈것"},{text:"헬리콥터",emoji:"🚁",group:"탈것"},{text:"자전거",emoji:"🚲",group:"탈것"},{text:"씽씽카",emoji:"🛴",group:"탈것"},
+    {text:"전철",emoji:"🚇",group:"탈것"},{text:"차",emoji:"🚗",group:"탈것"},{text:"배",emoji:"🚢",group:"탈것"},
+    {text:"오리",emoji:"🦆",group:"동물"},{text:"새",emoji:"🐦",group:"동물"},{text:"고양이",emoji:"🐱",group:"동물"},{text:"강아지",emoji:"🐶",group:"동물"},
+    {text:"닭",emoji:"🐔",group:"동물"},{text:"뱀",emoji:"🐍",group:"동물"},{text:"토끼",emoji:"🐰",group:"동물"},{text:"여우",emoji:"🦊",group:"동물"},
+    {text:"돼지",emoji:"🐷",group:"동물"},{text:"나비",emoji:"🦋",group:"동물"},{text:"게",emoji:"🦀",group:"동물"},{text:"벌레",emoji:"🐛",group:"동물"},
+    {text:"그네",emoji:"🛝",group:"놀이"},{text:"미끄럼틀",emoji:"🛝",group:"놀이"},{text:"종이접기",emoji:"📄",group:"놀이"},{text:"로봇",emoji:"🤖",group:"놀이"},
+    {text:"장난감",emoji:"🧸",group:"놀이"},{text:"인형",emoji:"🧸",group:"놀이"},{text:"기타",emoji:"🎸",group:"놀이"},{text:"드럼",emoji:"🥁",group:"놀이"},
+    {text:"골프",emoji:"⛳",group:"놀이"},{text:"배드민턴",emoji:"🏸",group:"놀이"},{text:"수영",emoji:"🏊",group:"놀이"},{text:"줄넘기",emoji:"🪢",group:"놀이"},
+    {text:"달리기",emoji:"🏃",group:"놀이"},{text:"게임",emoji:"🎮",group:"놀이"},{text:"닌텐도",emoji:"🎮",group:"놀이"},{text:"연필",emoji:"✏️",group:"놀이"},
+    {text:"지우개",emoji:"🧽",group:"놀이"},{text:"필통",emoji:"🖊️",group:"놀이"},{text:"가위",emoji:"✂️",group:"놀이"},{text:"풀",emoji:"🧴",group:"놀이"},
+    {text:"스티커",emoji:"⭐",group:"놀이"},{text:"반지",emoji:"💍",group:"놀이"},{text:"하트",emoji:"❤️",group:"놀이"},
+    {text:"모자",emoji:"🧢",group:"옷"},{text:"잠바",emoji:"🧥",group:"옷"},{text:"양말",emoji:"🧦",group:"옷"},{text:"운동화",emoji:"👟",group:"옷"},
+    {text:"실내화",emoji:"🥿",group:"옷"},{text:"옷",emoji:"👕",group:"옷"},{text:"바지",emoji:"👖",group:"옷"},{text:"팬티",emoji:"🩲",group:"옷"},
+    {text:"내복",emoji:"🩲",group:"옷"},{text:"안경",emoji:"👓",group:"옷"},{text:"립스틱",emoji:"💄",group:"옷"},{text:"밴드",emoji:"🩹",group:"옷"},
+    {text:"책가방",emoji:"🎒",group:"옷"},
+    {text:"앉다",emoji:"🪑",group:"행동"},{text:"올라가다",emoji:"⬆️",group:"행동"},{text:"내려와",emoji:"⬇️",group:"행동"},{text:"내려오다",emoji:"⬇️",group:"행동"},
+    {text:"샤워",emoji:"🚿",group:"행동"},{text:"세수",emoji:"🚿",group:"행동"},{text:"열다",emoji:"🔓",group:"행동"},{text:"닫다",emoji:"🔒",group:"행동"},
+    {text:"일하다",emoji:"💼",group:"행동"},{text:"운전하다",emoji:"🚗",group:"행동"},{text:"보다",emoji:"👀",group:"행동"},{text:"먹다",emoji:"🍽️",group:"행동"},
+    {text:"마시다",emoji:"🥤",group:"행동"},{text:"옷을 입다",emoji:"👕",group:"행동"},{text:"옷을 벗다",emoji:"👕",group:"행동"},{text:"신발을 신다",emoji:"👟",group:"행동"},
+    {text:"신발을 벗다",emoji:"👟",group:"행동"},{text:"공부하다",emoji:"📚",group:"행동"},{text:"나오다",emoji:"🚶",group:"행동"},{text:"자",emoji:"😴",group:"행동"},
+    {text:"소리",emoji:"🔊",group:"행동"},
+    {text:"뽀로로",emoji:"📺",group:"캐릭터"},{text:"루피",emoji:"📺",group:"캐릭터"},{text:"페티",emoji:"📺",group:"캐릭터"},{text:"에디",emoji:"📺",group:"캐릭터"},
+    {text:"크롱",emoji:"📺",group:"캐릭터"},{text:"포비",emoji:"📺",group:"캐릭터"},{text:"달님이",emoji:"📺",group:"캐릭터"},{text:"까투리",emoji:"📺",group:"캐릭터"},
+    {text:"씰룩",emoji:"📺",group:"캐릭터"},{text:"브래드이발소",emoji:"📺",group:"캐릭터"},{text:"똘랑이",emoji:"📺",group:"캐릭터"},{text:"티니핑",emoji:"📺",group:"캐릭터"},
+    {text:"짱구",emoji:"📺",group:"캐릭터"}
+  ];
+
+  var CUSTOM_WORDS_KEY = "yejun-custom-words";
+  function readCustomWords(){
+    try { var raw = localStorage.getItem(CUSTOM_WORDS_KEY); var p = raw ? JSON.parse(raw) : []; return Array.isArray(p) ? p : []; } catch (e) { return []; }
+  }
+  function saveCustomWords(list){ try { localStorage.setItem(CUSTOM_WORDS_KEY, JSON.stringify(list)); } catch (e) {} }
+  function addCustomWord(text, emoji){
+    var t = (text || "").trim();
+    if (!t) return readCustomWords();
+    var list = readCustomWords().concat([{ text: t, emoji: (emoji || "").trim() || "⭐", addedAt: Date.now() }]);
+    saveCustomWords(list);
+    return list;
+  }
+  function removeCustomWord(addedAt){
+    var list = readCustomWords().filter(function (w) { return w.addedAt !== addedAt; });
+    saveCustomWords(list);
+    return list;
+  }
 
   // ---------- progress (mirrors src/lib/progress.ts) ----------
   var PROGRESS_KEY = "yejun-progress-v1";
@@ -722,6 +814,9 @@
       '<a class="big-card tone-sky" href="#/numbers"><span class="big-card-face">1</span>' +
       '<span class="big-card-copy"><span class="big-card-title">숫자 배우기</span>' +
       '<span class="big-card-sub">세기 · 하나둘셋 · 순서</span></span></a>' +
+      '<a class="big-card tone-sun" href="#/words"><span class="big-card-face">🃏</span>' +
+      '<span class="big-card-copy"><span class="big-card-title">낱말 카드</span>' +
+      '<span class="big-card-sub">단어 ' + wordBank.length + '개 · 한 장씩 넘겨봐요</span></span></a>' +
       '<a class="big-card tone-sage" href="#/game"><span class="big-card-face">🎮</span>' +
       '<span class="big-card-copy"><span class="big-card-title">' + (gameUnlocked ? "보너스 놀이" : "보너스 놀이 (도장 5개)") + "</span>" +
       '<span class="big-card-sub">' + (gameUnlocked ? "글자·숫자 찾기 놀이" : "도장 " + Math.max(0, 5 - progress.stamps) + "개 더!") + "</span></span></a>";
@@ -767,6 +862,62 @@
         "<button class=\"voice-mini pick\" data-action=\"voice-pick\" data-voice=\"" + escapeHtml(v.name) + "\">" + (sel === v.name ? "사용 중" : "선택") + "</button></div>";
     });
     panel.innerHTML = html;
+  }
+
+  // ---------- words (낱말 카드) ----------
+  var wordsCustom = [];
+  var wordsCard = null;
+  var wordsShowAdd = false;
+
+  function wordsPool(){
+    return wordBank.concat(wordsCustom.map(function (w) { return { text: w.text, emoji: w.emoji }; }));
+  }
+  function wordsNext(avoid){
+    var pool = wordsPool();
+    if (!pool.length) { wordsCard = null; return; }
+    var candidates = pool.length > 1 ? pool.filter(function (w) { return w.text !== avoid; }) : pool;
+    wordsCard = pickRandom(candidates.length ? candidates : pool);
+    speak(wordsCard.text);
+  }
+  function renderWords(){
+    var progress = getProgress();
+    wordsCustom = readCustomWords();
+    if (!wordsCard) wordsNext();
+    var pool = wordsPool();
+
+    var cardHtml = wordsCard
+      ? '<div class="card word-card anim-pop">' +
+        '<div class="word-card-emoji">' + wordsCard.emoji + '</div>' +
+        '<div class="word-card-text">' + escapeHtml(wordsCard.text) + '</div>' +
+        '<div class="option-row" style="justify-content:center">' +
+        '<button class="btn-tap btn-outline-clay" data-action="words-hear">🔊 다시 듣기</button>' +
+        '<button class="btn-tap btn-primary" data-action="words-next">다음 낱말</button>' +
+        '</div></div>'
+      : '<div class="card word-card"><p class="hint">아직 카드에 쓸 단어가 없어요.</p></div>';
+
+    var customRows = wordsCustom.slice().reverse().map(function (w) {
+      return '<li class="word-custom-row"><span><span style="font-size:1.2rem;margin-right:0.4rem">' + w.emoji + '</span><span style="font-family:var(--font-display)">' + escapeHtml(w.text) + '</span></span>' +
+        '<button class="word-custom-del" data-action="words-delete" data-added="' + w.addedAt + '">✕</button></li>';
+    }).join("");
+
+    app.innerHTML =
+      learnHeaderHTML("낱말 카드", progress.stamps, "neutral") +
+      '<main class="learn-main narrow">' +
+      cardHtml +
+      '<p class="hint" style="text-align:center">단어 ' + pool.length + '개 중에서 무작위로 나와요 (기본 ' + wordBank.length + '개 + 새로 추가 ' + wordsCustom.length + '개)</p>' +
+      '<button class="btn-tap back-btn word-add-toggle" data-action="words-toggle-add">' + (wordsShowAdd ? "닫기" : "＋ 새 단어 추가하기 (보호자용)") + '</button>' +
+      (wordsShowAdd ?
+        '<div class="card word-add-panel">' +
+        '<p class="hint">여기서 추가한 단어는 저장하는 즉시 이 기기의 카드에 나와요. 다른 기기에서 쓰려면 그 기기에서도 똑같이 추가해 주세요.</p>' +
+        '<div class="word-add-row">' +
+        '<input id="word-emoji-input" class="word-emoji-input" maxlength="4" placeholder="이모지">' +
+        '<input id="word-text-input" class="word-text-input" placeholder="새 단어 (예: 콩나물)">' +
+        '<button class="word-add-btn" data-action="words-add">추가</button>' +
+        '</div>' +
+        (customRows ? '<ul class="word-custom-list">' + customRows + '</ul>' : "") +
+        '</div>'
+        : "") +
+      "</main>";
   }
 
   // ---------- hangul ----------
@@ -1128,12 +1279,13 @@
   }
 
   // ---------- router ----------
-  var ROUTES = { "": "home", "#/": "home", "#/hangul": "hangul", "#/numbers": "numbers", "#/game": "game" };
+  var ROUTES = { "": "home", "#/": "home", "#/hangul": "hangul", "#/numbers": "numbers", "#/words": "words", "#/game": "game" };
   function currentRouteName(){ return ROUTES[location.hash || "#/"] || "home"; }
   var lastRoute = null;
   function resetEphemeralFor(name){
     if (name === "hangul") { hangulLesson = null; hangulQuestion = null; hangulResult = "none"; hangulWrong = []; }
     if (name === "numbers") { numbersMode = "count"; numbersTask = null; numbersResult = "none"; numbersPicked = null; numbersOrderNext = 1; numbersOrderTiles = []; numbersBlank = null; numbersBlankFilled = 0; numbersBlankWrong = null; }
+    if (name === "words") { wordsCard = null; wordsShowAdd = false; }
     if (name === "game") { gameStarted = false; gameDone = false; gameTiles = []; }
   }
   function renderPage(){
@@ -1141,6 +1293,7 @@
     if (name !== lastRoute) { resetEphemeralFor(name); lastRoute = name; }
     if (name === "hangul") renderHangul();
     else if (name === "numbers") renderNumbers();
+    else if (name === "words") renderWords();
     else if (name === "game") renderGame();
     else renderHome();
   }
@@ -1168,6 +1321,23 @@
     else if (action === "game-tap") gameTap(Number(el.dataset.id));
     else if (action === "game-mode") gameSwitchMode(el.dataset.mode);
     else if (action === "game-restart") { startGame(gameMode); renderPage(); }
+    else if (action === "words-hear") { if (wordsCard) speak(wordsCard.text); }
+    else if (action === "words-next") { wordsNext(wordsCard && wordsCard.text); renderPage(); }
+    else if (action === "words-toggle-add") { wordsShowAdd = !wordsShowAdd; renderPage(); }
+    else if (action === "words-add") {
+      var ti = document.getElementById("word-text-input"), ei = document.getElementById("word-emoji-input");
+      wordsCustom = addCustomWord(ti ? ti.value : "", ei ? ei.value : "");
+      renderPage();
+    }
+    else if (action === "words-delete") { wordsCustom = removeCustomWord(Number(el.dataset.added)); renderPage(); }
+  });
+
+  app.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && e.target && e.target.id === "word-text-input") {
+      var ti = document.getElementById("word-text-input"), ei = document.getElementById("word-emoji-input");
+      wordsCustom = addCustomWord(ti ? ti.value : "", ei ? ei.value : "");
+      renderPage();
+    }
   });
 
   document.getElementById("sound-test").addEventListener("click", function () { speak("안녕 예준아"); });
