@@ -1056,7 +1056,7 @@
   }
 
   // ---------- numbers ----------
-  var numbersMode = "count", numbersTask = null, numbersResult = "none", numbersPicked = null;
+  var numbersMode = "count", numbersTask = null, numbersResult = "none", numbersWrong = [];
   var numbersOrderNext = 1, numbersOrderTiles = [];
   var numbersTurn = 0;
   var numbersBlank = null, numbersBlankFilled = 0, numbersBlankWrong = null;
@@ -1096,7 +1096,7 @@
   }
   function newNumberTask(mode){
     numbersTurn += 1;
-    numbersResult = "none"; numbersPicked = null;
+    numbersResult = "none"; numbersWrong = [];
     numbersBlankFilled = 0; numbersBlankWrong = null;
     if (mode === "blank") {
       numbersBlank = makeBlank();
@@ -1115,19 +1115,28 @@
     speak(mode === "count" ? "몇 개일까요?" : "이 숫자는 어떻게 세나요?");
   }
   function numbersSetMode(mode){ numbersMode = mode; newNumberTask(mode); renderPage(); }
+  function numOptStyle(value, correctValue){
+    if (numbersWrong.indexOf(value) !== -1) return "opt-wrong";
+    if (numbersResult === "right") return value === correctValue ? "opt-correct" : "opt-dim";
+    return "opt-neutral";
+  }
   function numbersAnswer(rawValue){
-    if (!numbersTask || numbersResult !== "none") return;
+    if (!numbersTask || numbersResult === "right") return;
     var item = numberItems.filter(function (n) { return n.value === numbersTask.value; })[0];
     var isCount = numbersTask.mode === "count";
     var value = isCount ? Number(rawValue) : rawValue;
+    if (numbersWrong.indexOf(value) !== -1) return;
     var correct = isCount ? value === numbersTask.value : value === item.native;
-    numbersPicked = value;
-    numbersResult = correct ? "right" : "wrong";
-    if (correct) {
-      recordNumber(isCount ? "countCorrect" : "nativeCorrect");
-      addStamp("숫자 " + numbersTask.value);
-      speak("맞았어요. " + item.value + ", " + item.native);
-    } else { speak("다시 세어 볼까요"); }
+    if (!correct) {
+      numbersWrong.push(value);
+      speak("다시 세어 볼까요");
+      renderPage();
+      return;
+    }
+    numbersResult = "right";
+    recordNumber(isCount ? "countCorrect" : "nativeCorrect");
+    addStamp("숫자 " + numbersTask.value);
+    speak("맞았어요. " + item.value + ", " + item.native);
     renderPage();
   }
   function numbersNext(){ newNumberTask(numbersMode); renderPage(); }
@@ -1160,7 +1169,7 @@
       for (var i = 0; i < numbersTask.value; i++) dots += '<span class="dot-big"></span>';
       body = '<p class="quiz-prompt">몇 개일까요?</p><div class="dot-field">' + dots + '</div><div class="option-row">' +
         numbersTask.options.map(function (o) {
-          return '<button class="option-btn opt-number ' + optStyle(o, numbersPicked, numbersResult, numbersTask.value) + '" data-action="numbers-answer" data-value="' + o + '">' + o + "</button>";
+          return '<button class="option-btn opt-number ' + numOptStyle(o, numbersTask.value) + '" data-action="numbers-answer" data-value="' + o + '"' + (numbersResult === "right" ? " disabled" : "") + '>' + o + "</button>";
         }).join("") + "</div>";
     } else if (numbersMode === "native" && numbersTask && numbersTask.mode === "native") {
       var item = numberItems.filter(function (n) { return n.value === numbersTask.value; })[0];
@@ -1168,7 +1177,7 @@
       for (var j = 0; j < item.value; j++) dots2 += '<span class="dot-big small"></span>';
       body = '<p class="quiz-prompt"><span class="big-number">' + item.value + '</span> 는 어떻게 세나요?</p><div class="dot-field small">' + dots2 + '</div><div class="option-grid grid-3">' +
         numbersTask.options.map(function (o) {
-          return '<button class="option-btn opt-native ' + optStyle(o, numbersPicked, numbersResult, item.native) + '" data-action="numbers-answer" data-value="' + escapeHtml(o) + '">' + escapeHtml(o) + "</button>";
+          return '<button class="option-btn opt-native ' + numOptStyle(o, item.native) + '" data-action="numbers-answer" data-value="' + escapeHtml(o) + '"' + (numbersResult === "right" ? " disabled" : "") + '>' + escapeHtml(o) + "</button>";
         }).join("") + "</div>";
     } else if (numbersMode === "blank" && numbersBlank) {
       var bl = numbersBlank, cells = "";
@@ -1194,9 +1203,9 @@
       learnHeaderHTML("숫자 배우기", progress.stamps, "neutral") +
       '<main class="learn-main"><div class="mode-row">' + modeButtons + '</div>' +
       '<div class="card quiz-card anim-pop">' + body +
-      (numbersResult !== "none"
-        ? '<div class="quiz-footer">' + yejunHTML({ size: "md", pose: "warm", badge: numbersResult === "right" ? null : RETRY_STAMP, says: numbersResult === "right" ? "잘했어요! 도장 찍기 🎉" : "괜찮아요, 다시 해봐요" }) +
-          '<button class="btn-tap btn-sky" data-action="numbers-next">다음</button></div>'
+      (numbersResult === "right" || numbersWrong.length > 0
+        ? '<div class="quiz-footer">' + yejunHTML({ size: "md", pose: "warm", badge: numbersResult === "right" ? null : RETRY_STAMP, says: numbersResult === "right" ? "잘했어요! 도장 찍기 🎉" : "괜찮아요, 다른 걸 골라봐요" }) +
+          (numbersResult === "right" ? '<button class="btn-tap btn-sky" data-action="numbers-next">다음</button>' : "") + '</div>'
         : "") +
       '</div><p class="hint">수를 셀 때는 그림 없이 같은 색·같은 모양만 사용해요.</p></main>';
   }
@@ -1284,7 +1293,7 @@
   var lastRoute = null;
   function resetEphemeralFor(name){
     if (name === "hangul") { hangulLesson = null; hangulQuestion = null; hangulResult = "none"; hangulWrong = []; }
-    if (name === "numbers") { numbersMode = "count"; numbersTask = null; numbersResult = "none"; numbersPicked = null; numbersOrderNext = 1; numbersOrderTiles = []; numbersBlank = null; numbersBlankFilled = 0; numbersBlankWrong = null; }
+    if (name === "numbers") { numbersMode = "count"; numbersTask = null; numbersResult = "none"; numbersWrong = []; numbersOrderNext = 1; numbersOrderTiles = []; numbersBlank = null; numbersBlankFilled = 0; numbersBlankWrong = null; }
     if (name === "words") { wordsCard = null; wordsShowAdd = false; }
     if (name === "game") { gameStarted = false; gameDone = false; gameTiles = []; }
   }
